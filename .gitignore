@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+
+# Configurações Sensíveis (MUITO IMPORTANTE)
+.env
+
+# Arquivos temporários de áudio
+temp_audio_*.ogg
+temp_*.ogg
+
+# Logs e DB local se houver
+*.log
+*.sqlite3
