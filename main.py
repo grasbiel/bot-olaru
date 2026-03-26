@@ -57,6 +57,8 @@ r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASS, decode_re
 
 # Armazenamento de Histórico no Postgres
 storage = PostgresAgentStorage(table_name="agent_sessions", db_url=DB_URL)
+# Garantir que a tabela de histórico exista
+storage.create()
 
 # --- FUNÇÕES DE APOIO ---
 
@@ -134,6 +136,11 @@ def salvar_cliente_no_banco(nome, telefone):
 # --- SKILLS DA IA ---
 
 def buscar_dados_cliente(telefone: str) -> str:
+    """Busca o nome e ID de um cliente cadastrado no banco de dados usando o número de telefone.
+    
+    Args:
+        telefone (str): O número de telefone do cliente (apenas números).
+    """
     try:
         conexao = psycopg2.connect(host=DB_HOST, database=DB_NAME, user=DB_USER, password=DB_PASS, port=DB_PORT)
         cursor = conexao.cursor()
@@ -147,6 +154,11 @@ def buscar_dados_cliente(telefone: str) -> str:
         return "Erro ao buscar."
 
 def verificar_estoque(maquina_nome: str) -> str:
+    """Verifica a disponibilidade e quantidade de uma máquina específica no estoque.
+    
+    Args:
+        maquina_nome (str): O nome da máquina ou equipamento (ex: 'betoneira', 'escavadeira').
+    """
     try:
         conexao = psycopg2.connect(host=DB_HOST, database=DB_NAME, user=DB_USER, password=DB_PASS, port=DB_PORT)
         cursor = conexao.cursor()
@@ -160,6 +172,12 @@ def verificar_estoque(maquina_nome: str) -> str:
         return "Erro estoque."
 
 def consultar_disponibilidade_agenda(data: str, turno: str) -> str:
+    """Verifica se há horários livres para visita técnica em uma data e turno específicos.
+    
+    Args:
+        data (str): A data da visita no formato 'AAAA-MM-DD'.
+        turno (str): O turno desejado ('manha', 'tarde' ou 'integral').
+    """
     try:
         conexao = psycopg2.connect(host=DB_HOST, database=DB_NAME, user=DB_USER, password=DB_PASS, port=DB_PORT)
         cursor = conexao.cursor()
@@ -173,11 +191,23 @@ def consultar_disponibilidade_agenda(data: str, turno: str) -> str:
         return "Erro agenda."
 
 def registrar_visita_tecnica(telefone: str, descricao: str, endereco: str, data: str, turno: str) -> str:
+    """Registra uma nova visita técnica solicitada pelo cliente no banco de dados.
+    
+    Args:
+        telefone (str): Telefone do cliente.
+        descricao (str): Descrição detalhada do serviço ou problema.
+        endereco (str): Endereço completo onde a visita deve ocorrer.
+        data (str): Data da visita ('AAAA-MM-DD').
+        turno (str): Turno da visita ('manha', 'tarde' ou 'integral').
+    """
     try:
         conexao = psycopg2.connect(host=DB_HOST, database=DB_NAME, user=DB_USER, password=DB_PASS, port=DB_PORT)
         cursor = conexao.cursor()
         cursor.execute("SELECT id FROM clientes WHERE telefone = %s", (telefone,))
-        cid = cursor.fetchone()[0]
+        res = cursor.fetchone()
+        if not res:
+            return "Erro: Cliente não encontrado. Cadastre o cliente primeiro."
+        cid = res[0]
         sql = "INSERT INTO visitas_tecnicas (cliente_id, descricao_servico, endereco, data_visita, turno, status) VALUES (%s, %s, %s, %s, %s, 'pendente') RETURNING id"
         cursor.execute(sql, (cid, descricao, endereco, data, turno))
         vid = cursor.fetchone()[0]
@@ -190,6 +220,13 @@ def registrar_visita_tecnica(telefone: str, descricao: str, endereco: str, data:
         return "Erro registro."
 
 def iniciar_handoff_humano(id_conversa: int, motivo: str) -> str:
+    """Transfere a conversa para um atendente humano e pausa o robô. 
+    Use esta ferramenta quando o cliente enviar imagens, documentos ou quando a IA não conseguir resolver o problema.
+    
+    Args:
+        id_conversa (int): O ID da conversa no Chatwoot.
+        motivo (str): O motivo do transbordo (ex: 'envio_imagem', 'duvida_complexa').
+    """
     adicionar_etiqueta_chatwoot(id_conversa, "pausar_robo")
     adicionar_etiqueta_chatwoot(id_conversa, f"handoff_{motivo}")
     return "Handoff iniciado. Robô pausado."
