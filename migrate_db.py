@@ -1,11 +1,16 @@
+import os
 import psycopg2
+from dotenv import load_dotenv
 
-# Configuração do Banco de Dados
-DB_HOST = "92.113.39.140"
-DB_NAME = "db_construtora"
-DB_USER = "postgres"
-DB_PASS = "72d889c22343e475218d"
-DB_PORT = "5432"
+# Carregar variáveis do arquivo .env
+load_dotenv()
+
+# Configuração do Banco de Dados via Variáveis de Ambiente
+DB_HOST = os.getenv("DB_HOST")
+DB_NAME = os.getenv("DB_NAME")
+DB_USER = os.getenv("DB_USER")
+DB_PASS = os.getenv("DB_PASS")
+DB_PORT = os.getenv("DB_PORT", "5432")
 
 SQL_COMMANDS = [
     "CREATE EXTENSION IF NOT EXISTS \"pgcrypto\";",
