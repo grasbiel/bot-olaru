@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request, BackgroundTasks, HTTPException
 from agno.agent import Agent
 from agno.models.groq import Groq
+from agno.storage.agent.postgres import PostgresAgentStorage
 from groq import Groq as GroqClient
 
 # Carregar variáveis do arquivo .env
@@ -24,6 +25,10 @@ structlog.configure(
 logger = structlog.get_logger()
 
 app = FastAPI()
+
+@app.get("/")
+async def root():
+    return {"status": "online", "message": "Olaru Bot is running!"}
 
 # Configurações
 CHATWOOT_URL = os.getenv("CHATWOOT_URL")
@@ -43,9 +48,15 @@ REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 REDIS_PASS = os.getenv("REDIS_PASS")
 
+# URL de Conexão para o Histórico (SQLAlchemy format)
+DB_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+
 # Inicialização de Clientes
 groq_client = GroqClient(api_key=CHAVE_GROQ)
 r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASS, decode_responses=True)
+
+# Armazenamento de Histórico no Postgres
+storage = PostgresAgentStorage(table_name="agent_sessions", db_url=DB_URL)
 
 # --- FUNÇÕES DE APOIO ---
 
@@ -60,7 +71,7 @@ def verificar_limite_mensagens():
         return True
     except Exception as e:
         logger.error("erro_redis_limite", erro=str(e))
-        return True # Fallback para continuar funcionando se o Redis cair
+        return True 
 
 def incrementar_contador_mensagens():
     try:
@@ -82,21 +93,27 @@ def obter_endereco_por_coordenadas(lat, lon):
         return f"Lat: {lat}, Lon: {lon}"
 
 def transcrever_audio(url_audio):
+    nome_arquivo = f"temp_{random.randint(1000, 9999)}.ogg"
     try:
-        response = requests.get(url_audio)
-        nome_arquivo = f"temp_{random.randint(1000, 9999)}.ogg"
-        with open(nome_arquivo, "wb") as f: f.write(response.content)
+        response = requests.get(url_audio, timeout=20)
+        with open(nome_arquivo, "wb") as f: 
+            f.write(response.content)
+        
         with open(nome_arquivo, "rb") as audio_file:
             transcription = groq_client.audio.transcriptions.create(
                 file=(nome_arquivo, audio_file.read()),
-                model="whisper-large-v3",
+                model="whisper-large-v3-turbo",
                 response_format="text",
                 language="pt"
             )
-        os.remove(nome_arquivo)
+        
+        if os.path.exists(nome_arquivo):
+            os.remove(nome_arquivo)
         return transcription
     except Exception as e:
-        logger.error("erro_transcricao", erro=str(e))
+        logger.error("erro_transcricao_detalhado", erro=str(e), url=url_audio)
+        if os.path.exists(nome_arquivo):
+            os.remove(nome_arquivo)
         return None
 
 def salvar_cliente_no_banco(nome, telefone):
@@ -192,12 +209,13 @@ def criar_agente():
             "Mantenha o tom profissional e cordial."
         ],
         tools=[buscar_dados_cliente, verificar_estoque, consultar_disponibilidade_agenda, registrar_visita_tecnica, iniciar_handoff_humano],
+        storage=storage, # Habilita salvamento de histórico no Postgres
         add_history_to_context=True,
         num_history_messages=8,
         markdown=True
     )
 
-# Agente global (o Agno mantém sessões separadas se passarmos o session_id no run)
+# Agente global 
 agente_construtora = criar_agente()
 
 def adicionar_etiqueta_chatwoot(id_conversa, etiqueta):
@@ -228,7 +246,6 @@ async def pensar_e_responder(mensagem_cliente: str, id_conversa: int, telefone: 
 
 @app.post("/webhook")
 async def receber_mensagem(request: Request, background_tasks: BackgroundTasks):
-    # Validação de Webhook Secret
     secret = request.headers.get("X-Webhook-Secret")
     if WEBHOOK_SECRET and secret != WEBHOOK_SECRET: 
         logger.warning("webhook_auth_failed", recebido=secret, esperado=WEBHOOK_SECRET)
@@ -239,7 +256,6 @@ async def receber_mensagem(request: Request, background_tasks: BackgroundTasks):
     except:
         return {"status": "erro_json"}
     
-    # Deduplicação usando Redis
     msg_id = dados.get("id")
     if msg_id:
         try:
@@ -247,7 +263,7 @@ async def receber_mensagem(request: Request, background_tasks: BackgroundTasks):
                 return {"status": "duplicado"}
             r.setex(f"msg_processada:{msg_id}", 600, "1")
         except:
-            pass # Continua se o Redis estiver fora
+            pass 
 
     if dados.get("event") == "message_created" and dados.get("message_type") == "incoming":
         
@@ -257,14 +273,12 @@ async def receber_mensagem(request: Request, background_tasks: BackgroundTasks):
         telefone_contato = dados.get("sender", {}).get("phone_number", "").replace("+", "")
         etiquetas = dados.get("conversation", {}).get("labels", [])
         
-        # Filtro de Número de Teste
         if NUMERO_TESTE and telefone_contato != NUMERO_TESTE:
             logger.info("ignorado_pelo_filtro_teste", telefone=telefone_contato)
             return {"status": "ignorado_teste"}
 
         attachments = dados.get("attachments", [])
 
-        # Processar Anexos
         for anexo in attachments:
             tipo = anexo.get("file_type")
             if tipo == "audio":
@@ -280,6 +294,10 @@ async def receber_mensagem(request: Request, background_tasks: BackgroundTasks):
 
         if "GROUP" in nome_contato or "pausar_robo" in etiquetas: 
             return {"status": "ignorado"}
+
+        if not mensagem_cliente:
+            logger.warning("mensagem_vazia", id_conversa=id_conversa)
+            return {"status": "sem_conteudo"}
 
         msg_min = mensagem_cliente.lower()
         if "robo_ativo" in etiquetas or "anúncio" in msg_min or "anuncio" in msg_min:
