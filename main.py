@@ -267,7 +267,8 @@ async def receber_mensagem(request: Request, background_tasks: BackgroundTasks):
 
     if dados.get("event") == "message_created" and dados.get("message_type") == "incoming":
         
-        mensagem_cliente = dados.get("content", "")
+        # Garante que mensagem_cliente nunca seja None
+        mensagem_cliente = dados.get("content") or ""
         id_conversa = dados.get("conversation", {}).get("id")
         nome_contato = dados.get("sender", {}).get("name", "").upper()
         telefone_contato = dados.get("sender", {}).get("phone_number", "").replace("+", "")
@@ -282,8 +283,13 @@ async def receber_mensagem(request: Request, background_tasks: BackgroundTasks):
         for anexo in attachments:
             tipo = anexo.get("file_type")
             if tipo == "audio":
+                logger.info("processando_audio", url=anexo.get("data_url"))
                 transcricao = transcrever_audio(anexo.get("data_url"))
-                if transcricao: mensagem_cliente = f"[ÁUDIO]: {transcricao}"
+                if transcricao: 
+                    mensagem_cliente = f"[ÁUDIO]: {transcricao}"
+                else:
+                    logger.error("falha_transcricao_audio")
+                    mensagem_cliente = "[ERRO]: Não foi possível transcrever o áudio."
             elif tipo == "location":
                 lat, lon = anexo.get("coordinates_lat"), anexo.get("coordinates_long")
                 if lat and lon:
