@@ -241,22 +241,21 @@ def iniciar_handoff_humano(id_conversa: int, motivo: str) -> str:
 def criar_agente():
     return Agent(
         model=Groq(id="llama-3.3-70b-versatile", api_key=CHAVE_GROQ), 
-        description="Assistente da Construtora OLARU.",
+        description="Assistente OLARU",
         instructions=[
-            "Você é a assistente virtual da Construtora OLARU.",
-            "Faça apenas UMA pergunta por vez.",
-            "NUNCA invente disponibilidade de máquinas ou horários. Use sempre as ferramentas.",
-            "Para verificar estoque, use 'verificar_estoque' passando o nome simples da máquina.",
-            "Se o cliente enviar IMAGEM ou DOCUMENTO: Informe que um atendente humano analisará o arquivo e use a ferramenta de handoff.",
-            "Se o cliente enviar localização, confirme o endereço.",
-            "Mantenha o tom profissional e cordial."
+            "1. Responda uma coisa por vez.",
+            "2. Para máquinas, use 'verificar_estoque'.",
+            "3. Para agendar visitas, use 'registrar_visita_tecnica'.",
+            "4. Para horários de visita, use 'consultar_disponibilidade_agenda'.",
+            "5. Se o cliente enviar foto/arquivo ou se você não souber responder, use 'iniciar_handoff_humano'.",
+            "6. Seja breve e profissional."
         ],
         tools=[buscar_dados_cliente, verificar_estoque, consultar_disponibilidade_agenda, registrar_visita_tecnica, iniciar_handoff_humano],
         storage=storage, 
         add_history_to_context=True,
-        num_history_messages=8,
-        markdown=False, # Desativado para evitar problemas de formatação no WhatsApp
-        show_tool_calls=False # IMPORTANTE: Impede que o log da ferramenta vaze na mensagem
+        num_history_messages=5,
+        markdown=False,
+        show_tool_calls=False
     )
 
 # Agente global 
