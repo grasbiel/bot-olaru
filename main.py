@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request, BackgroundTasks, HTTPException
 from agno.agent import Agent
 from agno.models.groq import Groq
-from agno.storage.agent.postgres import PostgresAgentStorage
+from agno.db.postgres import PostgresDb
 from groq import Groq as GroqClient
 
 # Carregar variáveis do arquivo .env
@@ -56,7 +56,7 @@ groq_client = GroqClient(api_key=CHAVE_GROQ)
 r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASS, decode_responses=True)
 
 # Armazenamento de Histórico no Postgres
-storage = PostgresAgentStorage(table_name="agent_sessions", db_url=DB_URL)
+storage = PostgresDb(session_table="agent_sessions", db_url=DB_URL)
 # Garantir que a tabela de histórico exista
 storage.create()
 
@@ -251,7 +251,7 @@ def criar_agente():
             "6. Seja breve e profissional."
         ],
         tools=[buscar_dados_cliente, verificar_estoque, consultar_disponibilidade_agenda, registrar_visita_tecnica, iniciar_handoff_humano],
-        storage=storage, 
+        db=storage, 
         add_history_to_context=True,
         num_history_messages=5,
         markdown=False,
