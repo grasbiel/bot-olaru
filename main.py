@@ -57,8 +57,6 @@ r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASS, decode_re
 
 # Armazenamento de Histórico no Postgres
 storage = PostgresDb(session_table="agent_sessions", db_url=DB_URL)
-# Garantir que a tabela de histórico exista
-storage.create()
 
 # --- FUNÇÕES DE APOIO ---
 
