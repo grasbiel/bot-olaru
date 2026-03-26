@@ -252,8 +252,7 @@ def criar_agente():
         db=storage, 
         add_history_to_context=True,
         num_history_messages=5,
-        markdown=False,
-        show_tool_calls=False
+        markdown=False
     )
 
 # Agente global 
