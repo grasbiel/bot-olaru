@@ -231,7 +231,8 @@ async def receber_mensagem(request: Request, background_tasks: BackgroundTasks):
     # Validação de Webhook Secret
     secret = request.headers.get("X-Webhook-Secret")
     if WEBHOOK_SECRET and secret != WEBHOOK_SECRET: 
-        raise HTTPException(status_code=403)
+        logger.warning("webhook_auth_failed", recebido=secret, esperado=WEBHOOK_SECRET)
+        raise HTTPException(status_code=403, detail="Webhook Secret Inválido")
 
     try:
         dados = await request.json()
