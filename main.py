@@ -136,11 +136,12 @@ def salvar_cliente_no_banco(nome, telefone):
 # --- SKILLS DA IA ---
 
 def buscar_dados_cliente(telefone: str) -> str:
-    """Busca o nome e ID de um cliente cadastrado no banco de dados usando o número de telefone.
+    """Busca informações de um cliente pelo número de telefone.
     
     Args:
-        telefone (str): O número de telefone do cliente (apenas números).
+        telefone (str): Telefone do cliente (apenas dígitos). Ex: '55988887777'.
     """
+    logger.info("tool_call", tool="buscar_dados_cliente", telefone=telefone)
     try:
         conexao = psycopg2.connect(host=DB_HOST, database=DB_NAME, user=DB_USER, password=DB_PASS, port=DB_PORT)
         cursor = conexao.cursor()
@@ -151,33 +152,36 @@ def buscar_dados_cliente(telefone: str) -> str:
         return f"Cliente: {res[1]} (ID: {res[0]})" if res else "Não cadastrado."
     except Exception as e:
         logger.error("skill_buscar_cliente", erro=str(e))
-        return "Erro ao buscar."
+        return "Erro ao buscar dados."
 
 def verificar_estoque(maquina_nome: str) -> str:
-    """Verifica a disponibilidade e quantidade de uma máquina específica no estoque.
+    """Consulta se temos uma máquina específica em estoque e sua quantidade disponível.
     
     Args:
-        maquina_nome (str): O nome da máquina ou equipamento (ex: 'betoneira', 'escavadeira').
+        maquina_nome (str): O nome curto do equipamento. EX: 'betoneira', 'escavadeira', 'andaime'.
     """
+    logger.info("tool_call", tool="verificar_estoque", maquina_nome=maquina_nome)
     try:
         conexao = psycopg2.connect(host=DB_HOST, database=DB_NAME, user=DB_USER, password=DB_PASS, port=DB_PORT)
         cursor = conexao.cursor()
+        # Busca por nome similar
         cursor.execute("SELECT nome, quantidade_disponivel FROM maquinas WHERE nome ILIKE %s", (f"%{maquina_nome}%",))
         res = cursor.fetchone()
         cursor.close()
         conexao.close()
-        return f"Máquina: {res[0]} | Qtd: {res[1]}" if res else "Não encontrada."
+        return f"Máquina: {res[0]} | Quantidade Disponível: {res[1]}" if res else "Desculpe, não encontrei nenhuma máquina com esse nome em nosso estoque."
     except Exception as e:
         logger.error("skill_estoque", erro=str(e))
-        return "Erro estoque."
+        return "Erro ao verificar estoque no banco de dados."
 
 def consultar_disponibilidade_agenda(data: str, turno: str) -> str:
-    """Verifica se há horários livres para visita técnica em uma data e turno específicos.
+    """Verifica se há disponibilidade na agenda para visitas técnicas.
     
     Args:
-        data (str): A data da visita no formato 'AAAA-MM-DD'.
-        turno (str): O turno desejado ('manha', 'tarde' ou 'integral').
+        data (str): Data no formato 'AAAA-MM-DD'.
+        turno (str): Turno desejado: 'manha', 'tarde' ou 'integral'.
     """
+    logger.info("tool_call", tool="consultar_disponibilidade_agenda", data=data, turno=turno)
     try:
         conexao = psycopg2.connect(host=DB_HOST, database=DB_NAME, user=DB_USER, password=DB_PASS, port=DB_PORT)
         cursor = conexao.cursor()
@@ -185,28 +189,29 @@ def consultar_disponibilidade_agenda(data: str, turno: str) -> str:
         agendados = cursor.fetchone()[0]
         cursor.close()
         conexao.close()
-        return "Disponível" if agendados < 3 else "Lotado"
+        return "Temos horários disponíveis para este período!" if agendados < 3 else "Infelizmente este turno já está com a agenda lotada."
     except Exception as e:
         logger.error("skill_agenda", erro=str(e))
-        return "Erro agenda."
+        return "Erro ao consultar agenda."
 
 def registrar_visita_tecnica(telefone: str, descricao: str, endereco: str, data: str, turno: str) -> str:
-    """Registra uma nova visita técnica solicitada pelo cliente no banco de dados.
+    """Agenda oficialmente uma visita técnica para um cliente.
     
     Args:
         telefone (str): Telefone do cliente.
-        descricao (str): Descrição detalhada do serviço ou problema.
-        endereco (str): Endereço completo onde a visita deve ocorrer.
-        data (str): Data da visita ('AAAA-MM-DD').
-        turno (str): Turno da visita ('manha', 'tarde' ou 'integral').
+        descricao (str): Detalhes do serviço.
+        endereco (str): Endereço da visita.
+        data (str): Data 'AAAA-MM-DD'.
+        turno (str): 'manha', 'tarde' ou 'integral'.
     """
+    logger.info("tool_call", tool="registrar_visita_tecnica", telefone=telefone)
     try:
         conexao = psycopg2.connect(host=DB_HOST, database=DB_NAME, user=DB_USER, password=DB_PASS, port=DB_PORT)
         cursor = conexao.cursor()
         cursor.execute("SELECT id FROM clientes WHERE telefone = %s", (telefone,))
         res = cursor.fetchone()
         if not res:
-            return "Erro: Cliente não encontrado. Cadastre o cliente primeiro."
+            return "Erro: O cliente não está cadastrado. Peça o nome dele primeiro."
         cid = res[0]
         sql = "INSERT INTO visitas_tecnicas (cliente_id, descricao_servico, endereco, data_visita, turno, status) VALUES (%s, %s, %s, %s, %s, 'pendente') RETURNING id"
         cursor.execute(sql, (cid, descricao, endereco, data, turno))
@@ -214,10 +219,10 @@ def registrar_visita_tecnica(telefone: str, descricao: str, endereco: str, data:
         conexao.commit()
         cursor.close()
         conexao.close()
-        return f"Registrada! Protocolo: {vid}"
+        return f"Agendamento concluído com sucesso! Protocolo da Visita: {vid}"
     except Exception as e:
         logger.error("skill_registro_visita", erro=str(e))
-        return "Erro registro."
+        return "Erro ao salvar agendamento no sistema."
 
 def iniciar_handoff_humano(id_conversa: int, motivo: str) -> str:
     """Transfere a conversa para um atendente humano e pausa o robô. 
@@ -238,18 +243,20 @@ def criar_agente():
         model=Groq(id="llama-3.3-70b-versatile", api_key=CHAVE_GROQ), 
         description="Assistente da Construtora OLARU.",
         instructions=[
+            "Você é a assistente virtual da Construtora OLARU.",
             "Faça apenas UMA pergunta por vez.",
-            "NUNCA invente disponibilidade. Use sempre as ferramentas.",
+            "NUNCA invente disponibilidade de máquinas ou horários. Use sempre as ferramentas.",
+            "Para verificar estoque, use 'verificar_estoque' passando o nome simples da máquina.",
             "Se o cliente enviar IMAGEM ou DOCUMENTO: Informe que um atendente humano analisará o arquivo e use a ferramenta de handoff.",
             "Se o cliente enviar localização, confirme o endereço.",
-            "Se o cliente enviar áudio, use a transcrição recebida.",
             "Mantenha o tom profissional e cordial."
         ],
         tools=[buscar_dados_cliente, verificar_estoque, consultar_disponibilidade_agenda, registrar_visita_tecnica, iniciar_handoff_humano],
-        storage=storage, # Habilita salvamento de histórico no Postgres
+        storage=storage, 
         add_history_to_context=True,
         num_history_messages=8,
-        markdown=True
+        markdown=False, # Desativado para evitar problemas de formatação no WhatsApp
+        show_tool_calls=False # IMPORTANTE: Impede que o log da ferramenta vaze na mensagem
     )
 
 # Agente global 
@@ -268,18 +275,30 @@ async def pensar_e_responder(mensagem_cliente: str, id_conversa: int, telefone: 
         return
 
     try:
-        # O session_id permite que o Agno mantém o histórico específico desta conversa
+        # Tenta rodar a IA
         resposta = agente_construtora.run(mensagem_cliente, session_id=f"conv_{id_conversa}")
+        conteudo_resposta = resposta.content
+
+        # Verificação extra: se a resposta vier vazia ou com erro técnico, usa fallback
+        if not conteudo_resposta or "error" in conteudo_resposta.lower() or "failed to call" in conteudo_resposta.lower():
+            logger.error("ia_retornou_erro_em_conteudo", conteudo=conteudo_resposta)
+            conteudo_resposta = "Desculpe, tive um probleminha técnico ao processar sua solicitação. Mas não se preocupe, já notifiquei nossa equipe e um atendente humano falará com você em breve!"
+            adicionar_etiqueta_chatwoot(id_conversa, "erro_ia")
         
         # Simulação de digitação (Escudo Anti-Ban)
-        tempo = random.randint(10, 20)
+        tempo = random.randint(5, 12) # Tempo um pouco menor para melhorar UX
         logger.info("processando_resposta", id_conversa=id_conversa, delay=tempo)
         await asyncio.sleep(tempo)
         
-        enviar_mensagem_chatwoot(id_conversa, resposta.content)
+        enviar_mensagem_chatwoot(id_conversa, conteudo_resposta)
         incrementar_contador_mensagens()
+
     except Exception as e:
-        logger.error("erro_ia", erro=str(e))
+        # FALLBACK CRÍTICO: Nunca envia o log 'e' para o cliente
+        logger.error("erro_critico_ia", erro=str(e))
+        fallback_msg = "Olá! No momento estou passando por uma manutenção rápida. Poderia aguardar um instante ou descrever o que precisa? Um de nossos atendentes já vai te dar atenção total."
+        enviar_mensagem_chatwoot(id_conversa, fallback_msg)
+        adicionar_etiqueta_chatwoot(id_conversa, "pausar_robo")
 
 @app.post("/webhook")
 async def receber_mensagem(request: Request, background_tasks: BackgroundTasks):
