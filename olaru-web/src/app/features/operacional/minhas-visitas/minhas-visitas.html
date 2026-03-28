@@ -1,0 +1,43 @@
+<div class="mobile-container">
+  <header class="mobile-header">
+    <span class="logo">OLARU</span>
+    <div class="tech-profile">
+      <span>👷 Técnico Logado</span>
+    </div>
+  </header>
+
+  <main class="mobile-content">
+    <div class="section-title">
+      <h2>Minhas Visitas de Hoje</h2>
+      <p>{{ hoje | date:'dd/MM/yyyy' }}</p>
+    </div>
+
+    <div class="visit-list">
+      <div class="visit-card" *ngFor="let v of visitas" [ngClass]="{'active': v.status === 'em_andamento'}">
+        <div class="visit-header">
+          <span class="time">{{ v.turno | uppercase }}</span>
+          <span class="badge" [ngClass]="v.status">{{ v.status | uppercase }}</span>
+        </div>
+        <h3>{{ v.cliente.nome }}</h3>
+        <p class="address">📍 {{ v.endereco }}</p>
+        <p class="desc">{{ v.descricaoServico }}</p>
+        
+        <div class="visit-actions">
+          <button *ngIf="v.status === 'confirmada'" (click)="mudarStatus(v.id, 'em_andamento')" class="btn-action primary">CHEGUEI NO LOCAL</button>
+          <button *ngIf="v.status === 'em_andamento'" (click)="mudarStatus(v.id, 'concluida')" class="btn-action success">FINALIZAR VISITA</button>
+          <button class="btn-action outline">VER ROTA (MAPS)</button>
+        </div>
+      </div>
+
+      <div *ngIf="visitas.length === 0" class="text-center mt-3">
+        Nenhuma visita agendada para hoje.
+      </div>
+    </div>
+  </main>
+
+  <nav class="mobile-nav">
+    <button class="nav-item active">📅 Agenda</button>
+    <button class="nav-item">✅ Concluídas</button>
+    <button class="nav-item">👤 Perfil</button>
+  </nav>
+</div>

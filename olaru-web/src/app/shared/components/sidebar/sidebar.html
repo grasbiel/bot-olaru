@@ -1,0 +1,29 @@
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <span class="logo">OLARU</span>
+  </div>
+  
+  <nav class="sidebar-nav">
+    <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+      <span class="icon">📊</span> Dashboard
+    </a>
+    <a routerLink="/visitas" routerLinkActive="active" class="nav-item">
+      <span class="icon">📅</span> Visitas Técnicas
+    </a>
+    <a routerLink="/maquinas" routerLinkActive="active" class="nav-item">
+      <span class="icon">🏗️</span> Máquinas
+    </a>
+    <a routerLink="/clientes" routerLinkActive="active" class="nav-item">
+      <span class="icon">👥</span> Clientes
+    </a>
+    <a routerLink="/config" routerLinkActive="active" class="nav-item">
+      <span class="icon">⚙️</span> Configurações
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <a href="#" (click)="logout($event)" class="nav-item logout">
+      <span class="icon">🚪</span> Sair
+    </a>
+  </div>
+</aside>

@@ -10,7 +10,7 @@ O sistema é uma plataforma B2B multicanal para empresas de engenharia e locaç�
 1. **Middleware de Atendimento (Python/FastAPI):** Um agente autônomo que atua via WhatsApp (Evolution API/Chatwoot), responsável por qualificação de leads, processamento de áudio (Whisper) e agendamento.
 2. **Painel Administrativo (Java/Spring Boot + Angular):** Uma aplicação web (CRM) para gestão de Equipes, Máquinas, Visitas e dashboard analítico.
 
-> **[NOVO] Princípio de Responsabilidade Única:** Cada serviço deve ter uma fronteira clara. O Middleware Python **não** deve acessar diretamente as entidades do painel administrativo — toda comunicação entre os dois nós deve passar por endpoints REST bem definidos ou eventos assíncronos (ex: fila de mensagens). Isso facilita manutenção e escalabilidade futura.
+> **Princípio de Responsabilidade Única:** Cada serviço deve ter uma fronteira clara. O Middleware Python **não** deve acessar diretamente as entidades do painel administrativo — toda comunicação entre os dois nós deve passar por endpoints REST bem definidos ou eventos assíncronos (ex: fila de mensagens). Isso facilita manutenção e escalabilidade futura.
 
 ---
 
@@ -193,7 +193,7 @@ REGRAS OBRIGATÓRIAS:
 > - **Janela deslizante:** As últimas **8 mensagens** (equilíbrio entre custo e contexto).
 > - **Limite de tokens:** Manter em **200 tokens** de resposta (150 pode truncar respostas com endereços ou datas longas).
 
-### 4.4 [NOVO] Fluxo de Fallback da IA
+### 4.4 Fluxo de Fallback da IA
 
 Definir comportamento explícito quando a IA falhar ou retornar erro:
 
@@ -218,7 +218,7 @@ Definir comportamento explícito quando a IA falhar ou retornar erro:
 
 > ** Trigger "anúncio":** Considerar também aceitar variações como `"anuncio"` (sem acento) e normalizar o texto recebido antes da verificação para evitar falhas por digitação do usuário.
 
-### 5.2 [NOVO] Validação do Webhook (Segurança)
+### 5.2 Validação do Webhook (Segurança)
 
 A Evolution API envia um `webhook_secret` no header das requisições. O FastAPI deve validar esse header **antes** de processar qualquer mensagem:
 
@@ -240,7 +240,7 @@ Para proteger o número do cliente contra bloqueios, a segurança não é feita 
 
 1. **Fila de Espera (Message Queue):** A IA processa múltiplas mensagens, mas o Python enfileira as respostas e envia para a Evolution API com atraso de **10 a 20 segundos** entre cada uma (usar `random.uniform(10, 20)` para imprevisibilidade).
 2. **Simulação Automática de Digitação:** O gerenciador da fila dispara `sendPresence` (`"digitando..."`) obrigatoriamente antes de liberar cada mensagem.
-3. **Limite de Segurança Diário (Throttling):** O script conta os envios diários. Se se aproximar do limite (ex: 200/dia para chips novos), entra em modo passivo. **[REVISADO]** Usar **Redis** para armazenar esse contador com TTL de 24h, em vez de variável em memória (que se perde ao reiniciar o processo).
+3. **Limite de Segurança Diário (Throttling):** O script conta os envios diários. Se se aproximar do limite (ex: 200/dia para chips novos), entra em modo passivo. Usar **Redis** para armazenar esse contador com TTL de 24h, em vez de variável em memória (que se perde ao reiniciar o processo).
 4. **Aquecimento Exigido:** É obrigatório o uso de um chip físico com histórico humano prévio antes da conexão via QR Code.
 5. ** Deduplicação de Mensagens:** Armazenar os últimos `message_id` recebidos em Redis com TTL de 60s para evitar processamento duplicado em caso de reentrega do webhook.
 
@@ -316,10 +316,10 @@ Arquitetura de telas com controle de acesso por tipo de usuário (RBAC).
 
 - Tela simples **"Minhas Visitas"** otimizada para uso em celular (layout mobile-first).
 - Botões de **"Cheguei no Local"** e **"Finalizar Visita"** que atualizam o Kanban do gerente em tempo real via SSE/WebSocket.
-- **[NOVO]** Campo de observações ao finalizar a visita, com possibilidade de tirar foto (upload de imagem via câmera do celular).
-- **[NOVO]** Indicador offline: se o técnico perder conexão, as ações são enfileiradas localmente e sincronizadas quando a conexão retornar.
+- Campo de observações ao finalizar a visita, com possibilidade de tirar foto (upload de imagem via câmera do celular).
+- Indicador offline: se o técnico perder conexão, as ações são enfileiradas localmente e sincronizadas quando a conexão retornar.
 
-### 7.3 [NOVO] Tela de Login e Gestão de Sessão
+### 7.3 Tela de Login e Gestão de Sessão
 
 - Tela de login com email e senha.
 - Armazenar o access token no **sessionStorage** e o refresh token em cookie **httpOnly** (mais seguro que localStorage).
@@ -335,7 +335,7 @@ Arquitetura de telas com controle de acesso por tipo de usuário (RBAC).
 - **Java/Spring Boot:** Usar `SLF4J + Logback` com output JSON. Configurar níveis: `ERROR` em produção, `DEBUG` em desenvolvimento.
 - Centralizar logs com **Loki + Grafana** ou simplesmente rotacionar arquivos de log com `logrotate` na VPS.
 
-### 8.2 [NOVO] Monitoramento e Alertas
+### 8.2 Monitoramento e Alertas
 
 - Expor métricas do FastAPI via `/metrics` (Prometheus format) usando `prometheus-fastapi-instrumentator`.
 - Expor métricas do Spring Boot via **Spring Actuator** (`/actuator/prometheus`).
@@ -344,7 +344,7 @@ Arquitetura de telas com controle de acesso por tipo de usuário (RBAC).
   - Taxa de erros da IA acima de 10% em 1 hora.
   - Banco de dados inacessível.
 
-### 8.3 [NOVO] Backup
+### 8.3 Backup
 
 - Configurar backup automático do PostgreSQL com `pg_dump` diariamente (cron job na VPS).
 - Enviar o dump comprimido para storage externo (ex: Backblaze B2 ou S3-compatible).
@@ -357,7 +357,7 @@ Arquitetura de telas com controle de acesso por tipo de usuário (RBAC).
 ### 9.1 Testes de Segurança Anti-Ban
 
 - Confirmar que o evento `"digitando..."` aparece via fila do Python antes de cada mensagem.
-- Enviar 10 mensagens em sequência e verificar que o Python responde devagar, uma a uma (intervalo de 3-7s).
+- Enviar 10 mensagens em sequência e verificar que o Python responde devagar, uma a uma (intervalo de 15-25s).
 - Simular reinicialização do processo e confirmar que o contador de mensagens diárias persiste no Redis.
 
 ### 9.2 Testes de Banco de Dados

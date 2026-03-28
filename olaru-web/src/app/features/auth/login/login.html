@@ -1,0 +1,28 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="logo">
+      <span class="logo-text">OLARU</span>
+      <span class="logo-subtext">SaaS Construtech</span>
+    </div>
+    <h2>Bem-vindo de volta</h2>
+    <p class="subtitle">Acesse o painel de gestão</p>
+
+    <div *ngIf="error" class="error-message">{{ error }}</div>
+
+    <form (submit)="onLogin($event)">
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input type="email" name="email" id="email" [(ngModel)]="email" placeholder="seu@email.com" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Senha</label>
+        <input type="password" name="password" id="password" [(ngModel)]="senha" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn-login">Entrar</button>
+    </form>
+    
+    <div class="footer">
+      <a href="#">Esqueceu a senha?</a>
+    </div>
+  </div>
+</div>

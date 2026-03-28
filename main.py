@@ -2,7 +2,6 @@ import os
 import random
 import asyncio
 import requests
-import psycopg2
 import redis
 import structlog
 from datetime import datetime
@@ -38,6 +37,10 @@ CHAVE_GROQ = os.getenv("CHAVE_GROQ")
 WEBHOOK_SECRET = os.getenv("EVOLUTION_WEBHOOK_SECRET")
 NUMERO_TESTE = os.getenv("NUMERO_TESTE") 
 
+# Nova URL da API Java
+JAVA_API_URL = os.getenv("JAVA_API_URL", "http://localhost:8080/api/v1")
+
+# Dados do Postgres para o Histórico (Agno ainda usa DB direto para persistência de sessão)
 DB_HOST = os.getenv("DB_HOST")
 DB_NAME = os.getenv("DB_NAME")
 DB_USER = os.getenv("DB_USER")
@@ -117,63 +120,55 @@ def transcrever_audio(url_audio):
         return None
 
 def salvar_cliente_no_banco(nome, telefone):
+    """Agora via API REST Java."""
     try:
-        conexao = psycopg2.connect(host=DB_HOST, database=DB_NAME, user=DB_USER, password=DB_PASS, port=DB_PORT)
-        cursor = conexao.cursor()
-        sql = "INSERT INTO clientes (nome, telefone, origem) VALUES (%s, %s, 'Anúncio WhatsApp') ON CONFLICT (telefone) DO UPDATE SET nome = EXCLUDED.nome RETURNING id"
-        cursor.execute(sql, (nome, telefone))
-        cid = cursor.fetchone()[0]
-        conexao.commit()
-        cursor.close()
-        conexao.close()
-        return cid
+        payload = {"nome": nome, "telefone": telefone, "origem": "Anúncio WhatsApp"}
+        response = requests.post(f"{JAVA_API_URL}/clientes", json=payload, timeout=10)
+        if response.status_code in [200, 201]:
+            return response.json().get("id")
+        return None
     except Exception as e:
-        logger.error("erro_banco_cliente", erro=str(e))
+        logger.error("erro_api_salvar_cliente", erro=str(e))
         return None
 
 # --- SKILLS DA IA ---
 
 def buscar_dados_cliente(telefone: str) -> str:
-    """Busca informações de um cliente pelo número de telefone.
+    """Busca informações de um cliente pelo número de telefone via API REST.
     
     Args:
         telefone (str): Telefone do cliente (apenas dígitos). Ex: '55988887777'.
     """
     logger.info("tool_call", tool="buscar_dados_cliente", telefone=telefone)
     try:
-        conexao = psycopg2.connect(host=DB_HOST, database=DB_NAME, user=DB_USER, password=DB_PASS, port=DB_PORT)
-        cursor = conexao.cursor()
-        cursor.execute("SELECT id, nome FROM clientes WHERE telefone = %s", (telefone,))
-        res = cursor.fetchone()
-        cursor.close()
-        conexao.close()
-        return f"Cliente: {res[1]} (ID: {res[0]})" if res else "Não cadastrado."
+        response = requests.get(f"{JAVA_API_URL}/clientes/telefone/{telefone}", timeout=10)
+        if response.status_code == 200:
+            dados = response.json()
+            return f"Cliente: {dados.get('nome')} (ID: {dados.get('id')})"
+        return "Não cadastrado."
     except Exception as e:
-        logger.error("skill_buscar_cliente", erro=str(e))
-        return "Erro ao buscar dados."
+        logger.error("skill_buscar_cliente_api", erro=str(e))
+        return "Erro ao buscar dados na API."
 
 def verificar_estoque(maquina_nome: str) -> str:
-    """Consulta se temos uma máquina específica em estoque e sua quantidade disponível.
+    """Consulta se temos uma máquina específica em estoque via API REST.
     
     Args:
         maquina_nome (str): O nome curto do equipamento. EX: 'betoneira', 'escavadeira', 'andaime'.
     """
     logger.info("tool_call", tool="verificar_estoque", maquina_nome=maquina_nome)
     try:
-        conexao = psycopg2.connect(host=DB_HOST, database=DB_NAME, user=DB_USER, password=DB_PASS, port=DB_PORT)
-        cursor = conexao.cursor()
-        # Busca por nome similar
-        cursor.execute("SELECT nome, quantidade_disponivel FROM maquinas WHERE nome ILIKE %s", (f"%{maquina_nome}%",))
-        res = cursor.fetchone()
-        cursor.close()
-        conexao.close()
-        return f"Máquina: {res[0]} | Quantidade Disponível: {res[1]}" if res else "Desculpe, não encontrei nenhuma máquina com esse nome em nosso estoque."
+        response = requests.get(f"{JAVA_API_URL}/maquinas/estoque/{maquina_nome}", timeout=10)
+        if response.status_code == 200:
+            dados = response.json()
+            return f"Máquina: {dados.get('nome')} | Quantidade Disponível: {dados.get('quantidadeDisponivel')}"
+        return "Desculpe, não encontrei nenhuma máquina com esse nome em nosso estoque."
     except Exception as e:
-        logger.error("skill_estoque", erro=str(e))
-        return "Erro ao verificar estoque no banco de dados."
+        logger.error("skill_estoque_api", erro=str(e))
+        return "Erro ao verificar estoque na API."
 
 def consultar_disponibilidade_agenda(data: str, turno: str) -> str:
-    """Verifica se há disponibilidade na agenda para visitas técnicas.
+    """Verifica se há disponibilidade na agenda via API REST.
     
     Args:
         data (str): Data no formato 'AAAA-MM-DD'.
@@ -181,19 +176,20 @@ def consultar_disponibilidade_agenda(data: str, turno: str) -> str:
     """
     logger.info("tool_call", tool="consultar_disponibilidade_agenda", data=data, turno=turno)
     try:
-        conexao = psycopg2.connect(host=DB_HOST, database=DB_NAME, user=DB_USER, password=DB_PASS, port=DB_PORT)
-        cursor = conexao.cursor()
-        cursor.execute("SELECT COUNT(*) FROM visitas_tecnicas WHERE data_visita = %s AND turno = %s AND status != 'cancelada'", (data, turno))
-        agendados = cursor.fetchone()[0]
-        cursor.close()
-        conexao.close()
-        return "Temos horários disponíveis para este período!" if agendados < 3 else "Infelizmente este turno já está com a agenda lotada."
-    except Exception as e:
-        logger.error("skill_agenda", erro=str(e))
+        params = {"data": data, "turno": turno}
+        response = requests.get(f"{JAVA_API_URL}/visitas/disponibilidade", params=params, timeout=10)
+        if response.status_code == 200:
+            dados = response.json()
+            if dados.get("disponivel"):
+                return "Temos horários disponíveis para este período!"
+            return "Infelizmente este turno já está com a agenda lotada."
         return "Erro ao consultar agenda."
+    except Exception as e:
+        logger.error("skill_agenda_api", erro=str(e))
+        return "Erro ao consultar agenda via API."
 
 def registrar_visita_tecnica(telefone: str, descricao: str, endereco: str, data: str, turno: str) -> str:
-    """Agenda oficialmente uma visita técnica para um cliente.
+    """Agenda oficialmente uma visita técnica via API REST.
     
     Args:
         telefone (str): Telefone do cliente.
@@ -204,32 +200,26 @@ def registrar_visita_tecnica(telefone: str, descricao: str, endereco: str, data:
     """
     logger.info("tool_call", tool="registrar_visita_tecnica", telefone=telefone)
     try:
-        conexao = psycopg2.connect(host=DB_HOST, database=DB_NAME, user=DB_USER, password=DB_PASS, port=DB_PORT)
-        cursor = conexao.cursor()
-        cursor.execute("SELECT id FROM clientes WHERE telefone = %s", (telefone,))
-        res = cursor.fetchone()
-        if not res:
-            return "Erro: O cliente não está cadastrado. Peça o nome dele primeiro."
-        cid = res[0]
-        sql = "INSERT INTO visitas_tecnicas (cliente_id, descricao_servico, endereco, data_visita, turno, status) VALUES (%s, %s, %s, %s, %s, 'pendente') RETURNING id"
-        cursor.execute(sql, (cid, descricao, endereco, data, turno))
-        vid = cursor.fetchone()[0]
-        conexao.commit()
-        cursor.close()
-        conexao.close()
-        return f"Agendamento concluído com sucesso! Protocolo da Visita: {vid}"
-    except Exception as e:
-        logger.error("skill_registro_visita", erro=str(e))
+        payload = {
+            "telefone": telefone,
+            "descricaoServico": descricao,
+            "endereco": endereco,
+            "dataVisita": data,
+            "turno": turno
+        }
+        response = requests.post(f"{JAVA_API_URL}/visitas", json=payload, timeout=10)
+        if response.status_code in [200, 201]:
+            vid = response.json().get("id")
+            return f"Agendamento concluído com sucesso! Protocolo da Visita: {vid}"
+        elif response.status_code == 400:
+            return f"Erro: {response.text}"
         return "Erro ao salvar agendamento no sistema."
+    except Exception as e:
+        logger.error("skill_registro_visita_api", erro=str(e))
+        return "Erro ao conectar com a API de agendamento."
 
 def iniciar_handoff_humano(id_conversa: int, motivo: str) -> str:
-    """Transfere a conversa para um atendente humano e pausa o robô. 
-    Use esta ferramenta quando o cliente enviar imagens, documentos ou quando a IA não conseguir resolver o problema.
-    
-    Args:
-        id_conversa (int): O ID da conversa no Chatwoot.
-        motivo (str): O motivo do transbordo (ex: 'envio_imagem', 'duvida_complexa').
-    """
+    """Transfere a conversa para um atendente humano e pausa o robô."""
     adicionar_etiqueta_chatwoot(id_conversa, "pausar_robo")
     adicionar_etiqueta_chatwoot(id_conversa, f"handoff_{motivo}")
     return "Handoff iniciado. Robô pausado."
