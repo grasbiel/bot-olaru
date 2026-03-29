@@ -12,7 +12,8 @@ public class CorsConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOrigins(
                     "http://localhost:4200",
-                    "https://olaru.grasbiel.cloud" // Adicionando seu domínio de produção
+                    "https://olaru.grasbiel.cloud",
+                    "http://olaru.grasbiel.cloud"
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .allowedHeaders("*")

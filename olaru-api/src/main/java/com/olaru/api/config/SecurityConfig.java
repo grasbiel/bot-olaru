@@ -39,6 +39,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Permitir preflight
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                .requestMatchers("/error").permitAll() // Permitir o path de erro para evitar 403 em falhas
                 
                 .requestMatchers(HttpMethod.GET, "/api/v1/clientes/telefone/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/clientes").permitAll()
@@ -60,9 +61,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("https://olaru.grasbiel.cloud", "http://localhost:4200"));
+        configuration.setAllowedOrigins(Arrays.asList(
+            "https://olaru.grasbiel.cloud", 
+            "http://olaru.grasbiel.cloud",
+            "http://localhost:4200"
+        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
+        configuration.setAllowedHeaders(List.of("*")); // Permitir todos os headers
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
