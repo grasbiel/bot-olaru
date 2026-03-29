@@ -39,7 +39,7 @@ services:
       - DB_NAME=${DB_NAME:-db_construtora}
       - DB_USER=${DB_USER:-postgres}
       - DB_PASS=${DB_PASS:-72d889c22343e475218d}
-      - JWT_SECRET=${JWT_SECRET:-olaru-secret-key-para-desenvolvimento-pelo-menos-32-chars}
+      - JWT_SECRET=${JWT_SECRET:-183DASJDQW31DAS23FD92TREQ02QEQDASD13}
     depends_on:
       - db
 
