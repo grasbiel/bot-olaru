@@ -6,8 +6,14 @@
     
     <main class="content-body">
       <header class="content-header">
-        <h1>Kanban de Visitas Técnicas</h1>
-        <p>Acompanhe e gerencie os agendamentos realizados pela IA.</p>
+        <div class="header-info">
+          <h1>Kanban de Visitas Técnicas</h1>
+          <p>Acompanhe e gerencie os agendamentos realizados pela IA.</p>
+        </div>
+        <div class="header-filters">
+          <label for="date-filter">Data das Visitas:</label>
+          <input type="date" id="date-filter" [(ngModel)]="dataFiltro" (change)="carregarVisitas()" class="date-input">
+        </div>
       </header>
 
       <div class="kanban-board">

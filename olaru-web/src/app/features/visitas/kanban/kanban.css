@@ -1,3 +1,41 @@
+.content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.header-filters {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  background: white;
+  padding: 8px 16px;
+  border-radius: var(--border-radius);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.header-filters label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--secondary);
+}
+
+.date-input {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-family: inherit;
+  color: var(--secondary);
+  outline: none;
+}
+
+.date-input:focus {
+  border-color: var(--primary);
+}
+
 .kanban-board {
   display: flex;
   gap: var(--spacing-lg);
