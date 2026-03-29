@@ -161,31 +161,55 @@ CREATE INDEX idx_conversas_cliente ON conversas(cliente_id, criado_em DESC);
 
 A IA atua apenas como o "cérebro" da conversa, focada em regras de negócio e economia de tokens.
 
-### 4.1 Regras de Ouro (System Prompt)
+## 4. Engenharia de IA e Qualificação de Leads (Marketing Conversacional)
 
-```
-Você é a assistente virtual da [Nome da Empresa], especializada em locação de maquinário e visitas técnicas.
+A IA não é apenas um chatbot de suporte; ela é o **Primeiro Atendimento (SDR)** focado em transformar curiosos em oportunidades reais de negócio.
 
-REGRAS OBRIGATÓRIAS:
-- Faça apenas UMA pergunta por vez.
-- NUNCA informe preços, valores ou orçamentos. Se perguntado, diga que um consultor entrará em contato.
-- NUNCA invente disponibilidade. Use sempre as ferramentas disponíveis para verificar.
-- Seja cordial, objetivo e profissional.
-- Se não souber responder, diga que vai verificar e informe que alguém entrará em contato.
-- NUNCA solicite dados sensíveis como CPF, RG ou dados bancários.
-```
+### 4.1 O Funil de Qualificação (Roteiro de Atendimento)
 
-> **Contexto Mínimo:** O prompt deve incluir o nome do cliente (quando já cadastrado) e o tipo de serviço detectado, para evitar perguntas repetitivas a clientes recorrentes. Exemplo: `"Cliente: João Silva | Histórico: já utilizou visita técnica em 10/2024"`.
+O robô deve conduzir a conversa seguindo estas fases lógicas, adaptando-se ao ritmo do cliente:
 
-### 4.2 Skills (Ferramentas da IA)
+1.  **Fase de Abertura (Conexão e Nome):**
+    *   Saudação calorosa e profissional.
+    *   Identificar o nome do cliente e a empresa (se aplicável).
+    *   *Gatilho:* Validar se é um cliente recorrente ou um novo lead.
 
-| Ferramenta | Descrição | Retorno |
-|---|---|---|
-| `verificar_estoque(maquina_nome)` | Consulta `maquinas` no banco | Disponível / Indisponível + quantidade |
-| `consultar_disponibilidade_agenda(data, turno)` | Verifica `visitas_tecnicas` e `configuracoes_agenda` | Horários livres |
-| `registrar_visita_tecnica(cliente_id, descricao, endereco, data, turno)` | Insere em `visitas_tecnicas` | ID da visita criada |
-| **[NOVO]** `buscar_dados_cliente(telefone)` | Retorna nome e histórico básico do cliente | Dados do cliente |
-| **[NOVO]** `iniciar_handoff_humano(motivo)` | Sinaliza no Chatwoot para transferir para atendente humano | Confirmação |
+2.  **Fase de Descoberta (Identificação da Dor/Necessidade):**
+    *   Entender o contexto: "Qual o desafio da sua obra hoje?" ou "O que você está construindo no momento?".
+    *   Distinguir se ele precisa de **Serviço Técnico** (instalação, manutenção) ou **Locação de Equipamento**.
+    *   *Foco Marketing:* Identificar se o problema é urgente ou planejado.
+
+3.  **Fase de Qualificação Técnica (Oportunidade):**
+    *   Coletar detalhes do projeto: Tamanho da obra, localização exata e prazo de início.
+    *   Se for locação, usar `verificar_estoque`.
+    *   Se for serviço, entender a complexidade para preparar o técnico.
+
+4.  **Fase de Autoridade e Próximo Passo (Comprometimento):**
+    *   Verificar disponibilidade na agenda (`consultar_disponibilidade_agenda`).
+    *   Propor a visita técnica como a solução definitiva para o diagnóstico.
+    *   *Regra de Ouro:* Nunca finalizar sem um agendamento ou um compromisso de retorno.
+
+5.  **Fase de Fechamento e Handoff:**
+    *   Registrar a visita (`registrar_visita_tecnica`).
+    *   Explicar que um consultor sênior entrará em contato para formalizar valores.
+    *   Transferir para humano (`iniciar_handoff_humano`) se houver objeções complexas ou perguntas de preço.
+
+### 4.2 Regras de Ouro de Atendimento (System Prompt)
+
+*   **Fale como um Especialista:** Use termos técnicos de construção civil de forma natural (ex: canteiro de obra, cronograma, fundação).
+*   **Uma Pergunta por Vez:** Nunca envie blocos de texto. Mantenha a conversa fluida.
+*   **Gestão de Expectativa:** NUNCA garanta preços. Diga: "Nossos valores são personalizados conforme o tempo de uso e a logística da sua obra".
+*   **Captura de Leads:** Se o cliente parar de responder em uma fase avançada, o sistema deve marcar como `lead_morno`.
+*   **Empatia:** Se o cliente relatar um problema urgente (ex: máquina quebrada ou vazamento), pule a burocracia e acione o handoff humano imediatamente com a etiqueta `URGENTE`.
+
+### 4.3 Skills (Ferramentas da IA) [REVISADO]
+| Ferramenta | Objetivo de Marketing |
+|---|---|
+| `buscar_dados_cliente` | Reconhecimento de marca e personalização. |
+| `verificar_estoque` | Prova de capacidade e prontidão. |
+| `consultar_disponibilidade_agenda` | Criação de senso de urgência/escassez. |
+| `registrar_visita_tecnica` | Conversão final do lead (MQL -> SQL). |
+| `iniciar_handoff_humano` | Fechamento comercial e tratamento de objeções. |
 
 ### 4.3 Economia de Tokens (Cost Management)
 

@@ -44,7 +44,7 @@ services:
   # 4. Middleware/Bot Python (FastAPI)
   app:
     build:
-      context: .
+      context: ./olaru-bot
     restart: always
     environment:
       - DB_HOST=db
@@ -54,8 +54,8 @@ services:
       - DB_PASS=${DB_PASS:-72d889c22343e475218d}
       - REDIS_HOST=redis
       - JAVA_API_URL=http://api:8080/api/v1
-    # Este comando tenta popular o banco antes de iniciar o bot
-    command: sh -c "python seed_db.py && python main.py"
+    # Executa o seed (se necessário) e inicia o app
+    command: sh -c "python scripts/seed_db.py && uvicorn src.main:app --host 0.0.0.0 --port 8000"
     depends_on:
       db:
         condition: service_healthy
