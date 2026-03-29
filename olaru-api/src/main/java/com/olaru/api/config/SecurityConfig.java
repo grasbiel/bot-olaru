@@ -15,6 +15,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -26,22 +32,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(org.springframework.security.config.Customizer.withDefaults())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Permitir preflight
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 
-                // Endpoints que o Robô Python acessa (podemos exigir uma API Key ou JWT específico depois)
-                // Por enquanto permitindo para facilitar a transição, mas com RBAC seria:
                 .requestMatchers(HttpMethod.GET, "/api/v1/clientes/telefone/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/clientes").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/visitas/disponibilidade").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/visitas").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/maquinas/estoque/**").permitAll()
 
-                // Endpoints Administrativos (RBAC)
                 .requestMatchers("/api/v1/maquinas/**").hasAnyRole("ADMIN", "GERENTE")
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/visitas/**").hasAnyRole("ADMIN", "GERENTE", "TECNICO")
                 .requestMatchers(HttpMethod.GET, "/api/v1/visitas").hasAnyRole("ADMIN", "GERENTE")
@@ -51,6 +55,18 @@ public class SecurityConfig {
             .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
         
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("https://olaru.grasbiel.cloud", "http://localhost:4200"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
+        configuration.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     @Bean
