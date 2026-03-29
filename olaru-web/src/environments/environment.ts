@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://bot-olaru.grasbiel.cloud/api/v1'
+  apiUrl: 'https://api-olaru.grasbiel.cloud/api/v1'
 };
