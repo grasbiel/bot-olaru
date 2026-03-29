@@ -27,6 +27,7 @@ Todo o ecossistema será instalado em uma VPS (Hostinger), garantindo comunicaç
 | Frontend | Angular 17+ (standalone components) |
 | Cache | Redis (sessões de conversa e rate limiting) |
 | Proxy Reverso | Nginx (SSL termination, roteamento) |
+| A hospedagem será feita na hostinger |
 
 > ** Containerização:** Recomenda-se fortemente o uso de **Docker + Docker Compose** para orquestrar os serviços localmente e na VPS. Isso garante ambiente reproduzível, facilita deploys e isola as dependências de cada serviço.
 
@@ -307,10 +308,10 @@ Arquitetura de telas com controle de acesso por tipo de usuário (RBAC).
 ### 7.1 Área do Dono/Gerência
 
 - **Dashboard:** Indicadores chave (novos leads hoje, visitas do dia, máquinas disponíveis) e tabela de novos leads com botão para abrir a conversa no Chatwoot.
-- **Configurações:** Definição de regras de agenda (horário de almoço, fins de semana, feriados) lidas pelo robô via tabela `configuracoes_agenda`.
+- **Configurações:** Definição de regras de agenda (horário de a lmoço, fins de semana, feriados) lidas pelo robô via tabela `configuracoes_agenda`.
 - **Visitas Técnicas:** Tela em formato **Kanban** para arrastar e soltar os cards entre colunas (`Pendente → Confirmada → Em Andamento → Concluída`).
 - **Locações:** Controle visual do estoque de máquinas.
-- **[NOVO] Relatórios:** Exportação de leads e visitas em CSV/XLSX por período.
+- **Relatórios:** Exportação de leads e visitas em CSV/XLSX por período.
 
 ### 7.2 Área Operacional (Técnicos em Campo)
 
