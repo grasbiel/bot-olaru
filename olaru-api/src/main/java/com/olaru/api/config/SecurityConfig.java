@@ -1,6 +1,7 @@
 package com.olaru.api.config;
 
 import com.olaru.api.security.SecurityFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,10 +37,10 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Permitir preflight
-                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                .requestMatchers("/error").permitAll() // Permitir o path de erro para evitar 403 em falhas
+                .requestMatchers("/api/v1/auth/**").permitAll() // Broaden permitAll for all auth endpoints
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/api-docs/**").permitAll()
+                .requestMatchers("/error").permitAll()
                 
                 .requestMatchers(HttpMethod.GET, "/api/v1/clientes/telefone/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/clientes").permitAll()
@@ -53,7 +54,14 @@ public class SecurityConfig {
                 
                 .anyRequest().authenticated()
             )
-            .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\": \"Não autorizado\", \"message\": \"" + authException.getMessage() + "\"}");
+                })
+            );
         
         return http.build();
     }
@@ -67,8 +75,9 @@ public class SecurityConfig {
             "http://localhost:4200"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*")); // Permitir todos os headers
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Origin", "Accept", "X-Requested-With"));
         configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L); // Cache preflight for 1 hour
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
