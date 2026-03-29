@@ -12,8 +12,8 @@ DB_USER = os.getenv("DB_USER", "postgres")
 DB_PASS = os.getenv("DB_PASS", "72d889c22343e475218d")
 DB_PORT = os.getenv("DB_PORT", "5432")
 
-# Senha BCrypt para '123456'
-BCRYPT_PASS = "$2a$12$6y97uI6m5S5oV9p8nK2Qz.eWzS/9WjX2g9w1YvE/C7vUuW9Y.6y2q" # Hash para '123456'
+# Senha em Texto Puro para facilitar testes
+BCRYPT_PASS = "123456" # Senha real: '123456'
 
 SQL_SEED = [
     # 1. Garantir que a tabela de usuários existe (caso o Spring Boot ainda não tenha rodado)
