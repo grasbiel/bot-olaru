@@ -27,9 +27,12 @@ public class VisitaTecnicaController {
     private final ClienteRepository clienteRepository;
 
     @GetMapping
-    @Operation(summary = "Listar todas as visitas")
-    public List<VisitaTecnica> listar() {
-        return repository.findAll();
+    @Operation(summary = "Listar todas as visitas com filtro opcional de data")
+    public List<VisitaTecnica> listar(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data) {
+        if (data != null) {
+            return repository.findByDataVisitaOrderByCriadoEmDesc(data);
+        }
+        return repository.findAllByOrderByDataVisitaDescCriadoEmDesc();
     }
 
     @GetMapping("/disponibilidade")

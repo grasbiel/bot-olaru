@@ -9,4 +9,6 @@ import java.util.UUID;
 public interface VisitaTecnicaRepository extends JpaRepository<VisitaTecnica, UUID> {
     List<VisitaTecnica> findByDataVisitaAndTurno(LocalDate dataVisita, String turno);
     long countByDataVisitaAndTurnoAndStatusNot(LocalDate dataVisita, String turno, String status);
+    List<VisitaTecnica> findByDataVisitaOrderByCriadoEmDesc(LocalDate dataVisita);
+    List<VisitaTecnica> findAllByOrderByDataVisitaDescCriadoEmDesc();
 }

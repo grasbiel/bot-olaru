@@ -11,8 +11,12 @@ export class VisitaService {
 
   constructor(private http: HttpClient) {}
 
-  listar(): Observable<any[]> {
-    return this.http.get<any[]>(this.apiUrl);
+  listar(data?: string): Observable<any[]> {
+    let params = {};
+    if (data) {
+      params = { data };
+    }
+    return this.http.get<any[]>(this.apiUrl, { params });
   }
 
   atualizarStatus(id: string, novoStatus: string): Observable<any> {
