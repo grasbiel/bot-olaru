@@ -30,7 +30,7 @@ SQL_SEED = [
     # 2. Inserir Usuários de Teste (Admin, Gerente, Técnico)
     f"INSERT INTO usuarios (nome, email, senha_hash, perfil) VALUES ('Administrador', 'admin@olaru.com', '{BCRYPT_PASS}', 'ADMIN') ON CONFLICT (email) DO UPDATE SET senha_hash = EXCLUDED.senha_hash;",
     f"INSERT INTO usuarios (nome, email, senha_hash, perfil) VALUES ('Gerente de Obras', 'gerente@olaru.com', '{BCRYPT_PASS}', 'GERENTE') ON CONFLICT (email) DO UPDATE SET senha_hash = EXCLUDED.senha_hash;",
-    f"INSERT INTO usuarios (nome, email, senha_hash, perfil) VALUES ('Técnico Carlos', 'carlos@olaru.com', '{BCRYPT_PASS}', 'TECNICO') ON CONFLICT (email) DO UPDATE SET senha_hash = EXCLUDED.senha_hash;",,
+    f"INSERT INTO usuarios (nome, email, senha_hash, perfil) VALUES ('Técnico Carlos', 'carlos@olaru.com', '{BCRYPT_PASS}', 'TECNICO') ON CONFLICT (email) DO UPDATE SET senha_hash = EXCLUDED.senha_hash;",
 
     # 3. Inserir Máquinas
     "INSERT INTO maquinas (nome, descricao, quantidade_total, quantidade_disponivel, valor_diaria) VALUES ('Escavadeira Hidráulica 20T', 'Escavadeira para grandes obras', 2, 2, 1200.00) ON CONFLICT DO NOTHING;",
