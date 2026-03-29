@@ -29,7 +29,7 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(summary = "Realizar login e obter token JWT")
     public ResponseEntity<TokenDto> login(@RequestBody @Valid LoginDto loginDto) {
-        String email = loginDto.getEmail().trim().toLowerCase();
+        String email = loginDto.getEmail().replaceAll("\\s+", "").toLowerCase();
         UsernamePasswordAuthenticationToken authenticationToken = 
                 new UsernamePasswordAuthenticationToken(email, loginDto.getSenha());
         

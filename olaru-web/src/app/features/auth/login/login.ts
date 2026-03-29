@@ -23,7 +23,7 @@ export class LoginComponent {
     event.preventDefault();
     this.error = '';
     
-    this.authService.login({ email: this.email, senha: this.senha }).subscribe({
+    this.authService.login({ email: this.email.trim(), senha: this.senha }).subscribe({
       next: () => {
         console.log('Login efetuado com sucesso!');
         this.router.navigate(['/dashboard']);
