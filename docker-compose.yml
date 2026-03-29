@@ -50,7 +50,7 @@ services:
       - DB_HOST=db
       - DB_NAME=${DB_NAME:-db_construtora}
       - DB_USER=${DB_USER:-postgres}
-      - DB_PASS=${DB_PASS:-72d889c22343e475218d}
+      - DB_PASS=${DB_PASS}
       - REDIS_HOST=redis
       - JAVA_API_URL=http://api:8080/api/v1
     # Este comando tenta popular o banco antes de iniciar o bot
