@@ -1,9 +1,19 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SidebarComponent } from '../../../shared/components/sidebar/sidebar';
-import { HeaderComponent } from '../../../shared/components/header/header';
-import { MaquinaService } from '../../../core/services/maquina.service';
+import { SidebarComponent } from '../../shared/components/sidebar/sidebar';
+import { HeaderComponent } from '../../shared/components/header/header';
+import { MaquinaService } from '../../core/services/maquina.service';
+
+interface Maquina {
+  id?: string;
+  nome: string;
+  descricao: string;
+  quantidadeTotal: number;
+  quantidadeDisponivel: number;
+  valorDiaria: number;
+  ativo: boolean;
+}
 
 @Component({
   selector: 'app-maquina-list',
@@ -15,21 +25,21 @@ import { MaquinaService } from '../../../core/services/maquina.service';
 export class MaquinaListComponent implements OnInit {
   private maquinaService = inject(MaquinaService);
 
-  maquinas: any[] = [];
+  maquinas: Maquina[] = [];
   exibirForm = false;
-  maquinaSelecionada: any = this.resetMaquina();
+  maquinaSelecionada: Maquina = this.resetMaquina();
 
   ngOnInit() {
     this.carregarMaquinas();
   }
 
   carregarMaquinas() {
-    this.maquinaService.listar().subscribe(data => {
+    this.maquinaService.listar().subscribe((data: Maquina[]) => {
       this.maquinas = data;
     });
   }
 
-  resetMaquina() {
+  resetMaquina(): Maquina {
     return {
       nome: '',
       descricao: '',
@@ -45,7 +55,7 @@ export class MaquinaListComponent implements OnInit {
     this.exibirForm = true;
   }
 
-  editar(maquina: any) {
+  editar(maquina: Maquina) {
     this.maquinaSelecionada = { ...maquina };
     this.exibirForm = true;
   }
@@ -60,14 +70,18 @@ export class MaquinaListComponent implements OnInit {
 
   salvar() {
     if (this.maquinaSelecionada.id) {
-      this.maquinaService.atualizar(this.maquinaSelecionada.id, this.maquinaSelecionada).subscribe(() => {
-        this.carregarMaquinas();
-        this.exibirForm = false;
+      this.maquinaService.atualizar(this.maquinaSelecionada.id!, this.maquinaSelecionada).subscribe({
+        next: () => {
+          this.carregarMaquinas();
+          this.exibirForm = false;
+        }
       });
     } else {
-      this.maquinaService.salvar(this.maquinaSelecionada).subscribe(() => {
-        this.carregarMaquinas();
-        this.exibirForm = false;
+      this.maquinaService.salvar(this.maquinaSelecionada).subscribe({
+        next: () => {
+          this.carregarMaquinas();
+          this.exibirForm = false;
+        }
       });
     }
   }
