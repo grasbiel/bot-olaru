@@ -202,14 +202,24 @@ O robô deve conduzir a conversa seguindo estas fases lógicas, adaptando-se ao 
 *   **Captura de Leads:** Se o cliente parar de responder em uma fase avançada, o sistema deve marcar como `lead_morno`.
 *   **Empatia:** Se o cliente relatar um problema urgente (ex: máquina quebrada ou vazamento), pule a burocracia e acione o handoff humano imediatamente com a etiqueta `URGENTE`.
 
-### 4.3 Skills (Ferramentas da IA) [REVISADO]
-| Ferramenta | Objetivo de Marketing |
-|---|---|
-| `buscar_dados_cliente` | Reconhecimento de marca e personalização. |
-| `verificar_estoque` | Prova de capacidade e prontidão. |
-| `consultar_disponibilidade_agenda` | Criação de senso de urgência/escassez. |
-| `registrar_visita_tecnica` | Conversão final do lead (MQL -> SQL). |
-| `iniciar_handoff_humano` | Fechamento comercial e tratamento de objeções. |
+### 4.4 Padrões de Codificação e Melhores Práticas Agno [NOVO]
+
+Para garantir que a IA seja verdadeiramente "inteligente" e lembre-se do cliente em diferentes contatos, devemos seguir estes padrões:
+
+1.  **Memória Persistente de Fatos:**
+    *   Sempre habilitar `update_memory_on_run=True`. Isso permite que a IA extraia fatos (ex: "O cliente prefere atendimento à tarde") e os salve automaticamente.
+    *   Utilizar `user_id` (telefone do cliente) em todas as chamadas `agent.run()`, permitindo que a memória seja vinculada à pessoa e não apenas à conversa.
+
+2.  **Gestão de Sessão e Histórico:**
+    *   Habilitar `add_history_to_context=True` com uma janela de 10-12 mensagens.
+    *   Utilizar `PostgresDb` para persistência, separando as tabelas de sessão (`agent_sessions`) e memória (`agent_memory`).
+
+3.  **Desenvolvimento de Tools (Skills):**
+    *   As ferramentas devem ser granulares. Cada função deve fazer apenas uma coisa (ex: ou consulta estoque, ou agenda visita).
+    *   Sempre incluir `Docstrings` detalhadas nas funções das tools, pois a IA as utiliza para entender quando e como chamar a ferramenta.
+
+4.  **Resiliência de Modelos:**
+    *   Utilizar um `Model Factory` para permitir a troca entre Groq (velocidade) e Gemini (contexto longo/produção) sem alteração de código.
 
 ### 4.3 Economia de Tokens (Cost Management)
 

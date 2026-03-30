@@ -4,6 +4,7 @@ agno[postgres]
 groq==0.13.0
 redis==5.2.1
 psycopg2-binary==2.9.10
+psycopg[binary]
 requests==2.32.3
 structlog==24.4.0
 python-dotenv==1.0.1

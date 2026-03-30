@@ -47,5 +47,6 @@ REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 REDIS_PASS = os.getenv("REDIS_PASS")
 
-# URL SQLAlchemy (para o Agno)
+# URL SQLAlchemy (psycopg2 para scripts) e Agno (psycopg para o framework)
 DB_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+DB_URL_AGNO = f"postgresql+psycopg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"

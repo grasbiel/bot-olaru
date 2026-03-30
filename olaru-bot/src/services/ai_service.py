@@ -1,9 +1,10 @@
 import random
 import asyncio
-from agno.agent import Agent
+from agno.agent import Agent, AgentMemory
 from agno.models.groq import Groq
 from agno.models.google import Gemini
-from src.config import CHAVE_GROQ, GEMINI_API_KEY, LLM_PROVIDER, logger
+from agno.memory.db.postgres import PostgresMemoryDb
+from src.config import CHAVE_GROQ, GEMINI_API_KEY, LLM_PROVIDER, logger, DB_URL_AGNO
 from src.database import storage, r
 from src.services.chatwoot import enviar_mensagem_chatwoot, adicionar_etiqueta_chatwoot
 from src.services.utils import verificar_limite_mensagens, incrementar_contador_mensagens
@@ -25,47 +26,32 @@ def obter_modelo():
 def criar_agente():
     # Roteiro Estratégico de Qualificação de Leads (SDR)
     script_atendimento = """
-    Você é a assistente virtual da OLARU, atuando como o primeiro atendimento especializado (SDR) para empresas de construção.
-    Sua missão é QUALIFICAR o lead através das seguintes FASES, adaptando-se ao ritmo do cliente:
-
-    FASE 1: CONEXÃO E IDENTIFICAÇÃO (Saber com quem falamos)
-    - Saudação profissional: "Olá! Sou a assistente virtual da OLARU. Como posso ajudar em sua obra hoje?"
-    - Se o cliente for novo, identifique o nome dele e o nome da empresa/obra.
-
-    FASE 2: DESCOBERTA (Entender a Dor)
-    - Entenda o contexto: É uma construção nova? Reforma? Manutenção urgente?
-    - Identifique se ele precisa de SERVIÇO TÉCNICO ou LOCAÇÃO DE EQUIPAMENTO.
-    - Se o problema for URGENTE (ex: máquina parada), use 'iniciar_handoff_humano' com motivo 'urgencia_tecnica'.
-
-    FASE 3: QUALIFICAÇÃO TÉCNICA (Análise da Oportunidade)
-    - Pergunte o local da obra (endereço completo) para logística.
-    - Entenda o cronograma: Quando o serviço ou máquina deve começar?
-    - Se for locação, use 'verificar_estoque' para validar a disponibilidade.
-
-    FASE 4: COMPROMETIMENTO (Próximo Passo)
-    - Proponha uma Visita Técnica como a solução ideal para um diagnóstico preciso.
-    - Verifique a agenda usando 'consultar_disponibilidade_agenda'.
-    - Registre o agendamento usando 'registrar_visita_tecnica'.
-
-    FASE 5: FECHAMENTO E HANDOFF
-    - Confirme os dados e diga que um consultor entrará em contato para formalizar o orçamento final.
-    - Se houver perguntas de PREÇO ou contrato, use 'iniciar_handoff_humano'.
+    Você é a assistente virtual da OLARU, especializada em construção civil.
+    Sua missão é QUALIFICAR o lead através destas fases:
+    FASE 1: CONEXÃO (Saudação e Nome/Empresa)
+    FASE 2: DESCOBERTA (Obra nova? Reforma? Manutenção urgente?)
+    FASE 3: QUALIFICAÇÃO TÉCNICA (Endereço e Cronograma)
+    FASE 4: COMPROMETIMENTO (Verificar agenda e Registrar Visita Técnica)
+    FASE 5: FECHAMENTO (Handoff para o comercial)
     """
+
+    # Memória de Longo Prazo para lembrar de fatos do usuário (ex: Nome, Preferências)
+    memory_db = PostgresMemoryDb(table_name="agent_memory", db_url=DB_URL_AGNO)
 
     return Agent(
         model=obter_modelo(), 
-        description="Especialista em Atendimento e Qualificação de Leads para Construção Civil.",
+        description="Especialista em Qualificação de Leads para Construção Civil.",
         instructions=[
             script_atendimento,
             "REGRAS DE OURO:",
-            "- Analise o histórico para saber em qual FASE do funil você está.",
-            "- Fale como um ESPECIALISTA: use termos técnicos como 'canteiro', 'fundação', 'cronograma'.",
-            "- Faça apenas UMA pergunta por vez para manter o engajamento.",
-            "- NUNCA informe preços. Diga que o consultor enviará o orçamento personalizado.",
-            "- Se o cliente enviar áudio, a transcrição virá no formato [ÁUDIO]: texto."
+            "- Analise o histórico e a memória para saber quem é o cliente e em qual FASE você está.",
+            "- Fale como um ESPECIALISTA: use termos como 'canteiro', 'fundação', 'cronograma'.",
+            "- Faça apenas UMA pergunta por vez.",
+            "- NUNCA informe preços. O consultor enviará o orçamento personalizado.",
         ],
         tools=[buscar_dados_cliente, verificar_estoque, consultar_disponibilidade_agenda, registrar_visita_tecnica, iniciar_handoff_humano],
-        db=storage, 
+        db=storage,
+        memory=AgentMemory(db=memory_db, create_user_memories=True, update_user_memories_on_run=True),
         add_history_to_context=True,
         num_history_messages=12,
         markdown=False
@@ -79,7 +65,12 @@ async def pensar_e_responder(mensagem_cliente: str, id_conversa: int, telefone: 
         return
 
     try:
-        resposta = agente_construtora.run(mensagem_cliente, session_id=f"conv_{id_conversa}")
+        # Passamos o telefone como user_id para que o Agno vincule a memória a este cliente específico
+        resposta = agente_construtora.run(
+            mensagem_cliente, 
+            session_id=f"conv_{id_conversa}", 
+            user_id=telefone
+        )
         conteudo_resposta = resposta.content
 
         if not conteudo_resposta or "error" in conteudo_resposta.lower():
