@@ -15,6 +15,18 @@ export class MaquinaService {
     return this.http.get<any[]>(this.apiUrl);
   }
 
+  salvar(maquina: any): Observable<any> {
+    return this.http.post<any>(this.apiUrl, maquina);
+  }
+
+  atualizar(id: string, maquina: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, maquina);
+  }
+
+  excluir(id: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${id}`);
+  }
+
   consultarEstoque(nome: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/estoque/${nome}`);
   }

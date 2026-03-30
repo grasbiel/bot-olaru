@@ -1,10 +1,11 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar';
 import { HeaderComponent } from '../../shared/components/header/header';
-import { ClienteService } from '../../core/services/cliente.service';
-import { VisitaService } from '../../core/services/visita.service';
-import { MaquinaService } from '../../core/services/maquina.service';
+import { DashboardService } from '../../core/services/dashboard.service';
+import { Chart, registerables } from 'chart.js';
+
+Chart.register(...registerables);
 
 @Component({
   selector: 'app-dashboard',
@@ -14,43 +15,66 @@ import { MaquinaService } from '../../core/services/maquina.service';
   styleUrl: './dashboard.css'
 })
 export class DashboardComponent implements OnInit {
-  private clienteService = inject(ClienteService);
-  private visitaService = inject(VisitaService);
-  private maquinaService = inject(MaquinaService);
+  private dashboardService = inject(DashboardService);
 
-  leads: any[] = [];
-  visitas: any[] = [];
-  maquinas: any[] = [];
+  @ViewChild('evolucaoChart') evolucaoChart!: ElementRef;
 
-  stats = {
-    novosLeads: 0,
-    visitasHoje: 0,
-    maquinasAlugadas: 0,
-    disponibilidade: '0%'
+  indicadores: any = {
+    totalLeads: 0,
+    visitasPendentes: 0,
+    visitasConcluidas: 0,
+    taxaConversao: 0
   };
 
   ngOnInit() {
-    this.carregarDados();
+    this.carregarIndicadores();
   }
 
-  carregarDados() {
-    this.clienteService.listar().subscribe(data => {
-      this.leads = data;
-      this.stats.novosLeads = data.length;
+  carregarIndicadores() {
+    this.dashboardService.obterIndicadores().subscribe(data => {
+      this.indicadores = data;
     });
 
-    this.visitaService.listar().subscribe(data => {
-      this.visitas = data;
-      const hoje = new Date().toISOString().split('T')[0];
-      this.stats.visitasHoje = data.filter((v: any) => v.dataVisita === hoje).length;
+    this.dashboardService.obterEvolucao().subscribe(data => {
+      this.renderizarGrafico(data);
     });
+  }
 
-    this.maquinaService.listar().subscribe(data => {
-      this.maquinas = data;
-      const total = data.reduce((acc, m) => acc + m.quantidadeTotal, 0);
-      const disp = data.reduce((acc, m) => acc + m.quantidadeDisponivel, 0);
-      this.stats.maquinasAlugadas = total - disp;
-      this.stats.disponibilidade = total > 0 ? `${Math.round((disp / total) * 100)}%` : '0%';
+  renderizarGrafico(data: any) {
+    new Chart(this.evolucaoChart.nativeElement, {
+      type: 'line',
+      data: {
+        labels: data.labels,
+        datasets: [
+          {
+            label: 'Leads Qualificados',
+            data: data.leads,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            fill: true,
+            tension: 0.4
+          },
+          {
+            label: 'Visitas Técnicas',
+            data: data.visitas,
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            fill: true,
+            tension: 0.4
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom' }
+        },
+        scales: {
+          y: { beginAtZero: true, grid: { display: false } },
+          x: { grid: { display: false } }
+        }
+      }
     });
   }
 }

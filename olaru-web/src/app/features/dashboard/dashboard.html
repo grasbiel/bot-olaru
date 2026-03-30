@@ -6,93 +6,40 @@
     
     <main class="content-body">
       <header class="content-header">
-        <h1>Dashboard Principal</h1>
-        <p>Bem-vindo ao centro de operações da sua construtora.</p>
+        <h1>Dashboard Analítico</h1>
+        <p>Acompanhe o desempenho de conversão e leads em tempo real.</p>
       </header>
 
-      <section class="metrics-grid">
-        <div class="metric-card">
-          <div class="metric-icon leads">📢</div>
-          <div class="metric-info">
-            <span class="metric-label">Novos Leads</span>
-            <span class="metric-value">{{ stats.novosLeads }}</span>
-            <span class="metric-trend positive">Total acumulado</span>
-          </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="label">Total de Leads</span>
+          <div class="value">{{ indicadores.totalLeads }}</div>
+          <span class="trend positive">IA Qualificando</span>
         </div>
-        <div class="metric-card">
-          <div class="metric-icon visitas">📅</div>
-          <div class="metric-info">
-            <span class="metric-label">Visitas Hoje</span>
-            <span class="metric-value">{{ stats.visitasHoje }}</span>
-            <span class="metric-trend">Visitas agendadas</span>
-          </div>
+        <div class="stat-card">
+          <span class="label">Visitas Pendentes</span>
+          <div class="value">{{ indicadores.visitasPendentes }}</div>
+          <span class="trend">Aguardando Técnico</span>
         </div>
-        <div class="metric-card">
-          <div class="metric-icon maquinas">🏗️</div>
-          <div class="metric-info">
-            <span class="metric-label">Máquinas Alugadas</span>
-            <span class="metric-value">{{ stats.maquinasAlugadas }}</span>
-            <span class="metric-trend negative">Em campo</span>
-          </div>
+        <div class="stat-card">
+          <span class="label">Visitas Concluídas</span>
+          <div class="value">{{ indicadores.visitasConcluidas }}</div>
+          <span class="trend positive">Serviço Realizado</span>
         </div>
-        <div class="metric-card">
-          <div class="metric-icon estoque">📦</div>
-          <div class="metric-info">
-            <span class="metric-label">Disponibilidade</span>
-            <span class="metric-value">{{ stats.disponibilidade }}</span>
-            <span class="metric-trend positive">Estoque atual</span>
-          </div>
+        <div class="stat-card">
+          <span class="label">Taxa de Conversão</span>
+          <div class="value">{{ indicadores.taxaConversao }}%</div>
+          <span class="trend">Leads → Visitas</span>
         </div>
-      </section>
+      </div>
 
-      <div class="dashboard-details">
-        <section class="leads-list card">
-          <div class="card-header">
-            <h3>Leads Recentes (WhatsApp)</h3>
+      <div class="charts-row">
+        <div class="chart-container">
+          <h3>Evolução Semanal</h3>
+          <div class="canvas-wrapper">
+            <canvas #evolucaoChart></canvas>
           </div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>Cliente</th>
-                  <th>Telefone</th>
-                  <th>Origem</th>
-                  <th>Status</th>
-                  <th>Ação</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let lead of leads">
-                  <td>{{ lead.nome }}</td>
-                  <td>{{ lead.telefone }}</td>
-                  <td>{{ lead.origem }}</td>
-                  <td><span class="badge success">Cadastrado</span></td>
-                  <td><button class="btn-action">💬</button></td>
-                </tr>
-                <tr *ngIf="leads.length === 0">
-                  <td colspan="5" class="text-center">Nenhum lead encontrado.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section class="visitas-hoje card">
-          <div class="card-header">
-            <h3>Próximas Visitas</h3>
-          </div>
-          <div class="visita-item" *ngFor="let v of visitas">
-            <div class="visita-time">{{ v.turno | uppercase }}</div>
-            <div class="visita-details">
-              <strong>{{ v.cliente.nome }}</strong>
-              <span>{{ v.dataVisita | date:'dd/MM' }} - {{ v.endereco }}</span>
-            </div>
-            <div class="visita-status" [ngClass]="'status-' + v.status"></div>
-          </div>
-          <div *ngIf="visitas.length === 0" class="text-center mt-2">
-            Nenhuma visita agendada.
-          </div>
-        </section>
+        </div>
       </div>
     </main>
   </div>

@@ -46,4 +46,30 @@ public class MaquinaController {
     public Maquina salvar(@RequestBody Maquina maquina) {
         return repository.save(maquina);
     }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Atualizar máquina existente")
+    public ResponseEntity<Maquina> atualizar(@PathVariable UUID id, @RequestBody Maquina maquina) {
+        return repository.findById(id)
+                .map(m -> {
+                    m.setNome(maquina.getNome());
+                    m.setDescricao(maquina.getDescricao());
+                    m.setQuantidadeTotal(maquina.getQuantidadeTotal());
+                    m.setQuantidadeDisponivel(maquina.getQuantidadeDisponivel());
+                    m.setValorDiaria(maquina.getValorDiaria());
+                    m.setAtivo(maquina.getAtivo());
+                    return ResponseEntity.ok(repository.save(m));
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Excluir máquina")
+    public ResponseEntity<Void> excluir(@PathVariable UUID id) {
+        if (repository.existsById(id)) {
+            repository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
 }
