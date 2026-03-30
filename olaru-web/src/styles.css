@@ -92,3 +92,36 @@ button {
 .btn-primary:hover {
   background-color: var(--primary-dark);
 }
+
+/* Layout do Painel Administrativo */
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-main);
+  min-width: 0; /* Evita que o conteúdo estoure o flexbox */
+}
+
+.content-body {
+  padding: var(--spacing-lg);
+  flex: 1;
+}
+
+.content-header {
+  margin-bottom: var(--spacing-lg);
+}
+
+.content-header h1 {
+  margin-bottom: 4px;
+}
+
+.content-header p {
+  color: var(--text-muted);
+  font-size: 14px;
+}
