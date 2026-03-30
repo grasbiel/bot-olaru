@@ -27,6 +27,15 @@
               <div class="card-tag" [ngClass]="card.turno">{{ card.turno | uppercase }}</div>
               <h4>{{ card.cliente.nome }}</h4>
               <p>{{ card.descricaoServico }}</p>
+
+              <div class="card-assignment">
+                <label>Técnico:</label>
+                <select (change)="atribuirTecnico(card.id, $event)" [value]="card.tecnico?.id || ''">
+                  <option value="">Não atribuído</option>
+                  <option *ngFor="let t of tecnicos" [value]="t.id">{{ t.nome }}</option>
+                </select>
+              </div>
+              
               <div class="card-footer">
                 <span class="date">📅 {{ card.dataVisita | date:'dd/MM' }}</span>
                 <div class="actions">

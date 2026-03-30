@@ -11,4 +11,6 @@ public interface VisitaTecnicaRepository extends JpaRepository<VisitaTecnica, UU
     long countByDataVisitaAndTurnoAndStatusNot(LocalDate dataVisita, String turno, String status);
     List<VisitaTecnica> findByDataVisitaOrderByCriadoEmDesc(LocalDate dataVisita);
     List<VisitaTecnica> findAllByOrderByDataVisitaDescCriadoEmDesc();
+    List<VisitaTecnica> findByTecnicoEmailAndDataVisitaOrderByCriadoEmDesc(String email, LocalDate dataVisita);
+    long countByStatus(String status);
 }

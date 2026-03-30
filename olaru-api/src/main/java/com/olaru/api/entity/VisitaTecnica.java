@@ -26,6 +26,10 @@ public class VisitaTecnica {
     @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "tecnico_id")
+    private Usuario tecnico;
+
     @Column(name = "descricao_servico")
     private String descricaoServico;
 

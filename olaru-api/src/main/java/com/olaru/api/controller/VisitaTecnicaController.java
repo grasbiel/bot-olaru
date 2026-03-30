@@ -5,12 +5,16 @@ import com.olaru.api.entity.Cliente;
 import com.olaru.api.entity.VisitaTecnica;
 import com.olaru.api.repository.ClienteRepository;
 import com.olaru.api.repository.VisitaTecnicaRepository;
+import com.olaru.api.repository.UsuarioRepository;
+import com.olaru.api.security.SseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -25,6 +29,14 @@ public class VisitaTecnicaController {
 
     private final VisitaTecnicaRepository repository;
     private final ClienteRepository clienteRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final SseService sseService;
+
+    @GetMapping("/stream")
+    @Operation(summary = "Inscrever-se para atualizações em tempo real (SSE)")
+    public SseEmitter stream() {
+        return sseService.subscribe();
+    }
 
     @GetMapping
     @Operation(summary = "Listar todas as visitas com filtro opcional de data")
@@ -33,6 +45,27 @@ public class VisitaTecnicaController {
             return repository.findByDataVisitaOrderByCriadoEmDesc(data);
         }
         return repository.findAllByOrderByDataVisitaDescCriadoEmDesc();
+    }
+
+    @GetMapping("/minhas")
+    @Operation(summary = "Listar visitas do técnico logado para o dia atual")
+    public List<VisitaTecnica> listarMinhasVisitas(Authentication authentication) {
+        String email = authentication.getName();
+        return repository.findByTecnicoEmailAndDataVisitaOrderByCriadoEmDesc(email, LocalDate.now());
+    }
+
+    @PatchMapping("/{id}/atribuir")
+    @Operation(summary = "Atribuir técnico a uma visita")
+    public ResponseEntity<VisitaTecnica> atribuirTecnico(@PathVariable UUID id, @RequestBody Map<String, UUID> body) {
+        UUID tecnicoId = body.get("tecnicoId");
+        return repository.findById(id)
+                .map(visita -> {
+                    usuarioRepository.findById(tecnicoId).ifPresent(visita::setTecnico);
+                    VisitaTecnica salva = repository.save(visita);
+                    sseService.broadcast("visita-atualizada", "atribuicao");
+                    return ResponseEntity.ok(salva);
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/disponibilidade")
@@ -71,7 +104,9 @@ public class VisitaTecnicaController {
                 .status("pendente")
                 .build();
 
-        return ResponseEntity.ok(repository.save(visita));
+        VisitaTecnica salva = repository.save(visita);
+        sseService.broadcast("visita-atualizada", "novo-agendamento");
+        return ResponseEntity.ok(salva);
     }
 
     @PatchMapping("/{id}/status")
@@ -81,7 +116,9 @@ public class VisitaTecnicaController {
         return repository.findById(id)
                 .map(visita -> {
                     visita.setStatus(novoStatus);
-                    return ResponseEntity.ok(repository.save(visita));
+                    VisitaTecnica salva = repository.save(visita);
+                    sseService.broadcast("visita-atualizada", novoStatus);
+                    return ResponseEntity.ok(salva);
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
