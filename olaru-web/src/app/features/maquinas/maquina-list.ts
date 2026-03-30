@@ -60,7 +60,8 @@ export class MaquinaListComponent implements OnInit {
     this.exibirForm = true;
   }
 
-  excluir(id: string) {
+  excluir(id: string | undefined) {
+    if (!id) return;
     if (confirm('Tem certeza que deseja excluir esta máquina?')) {
       this.maquinaService.excluir(id).subscribe(() => {
         this.carregarMaquinas();
