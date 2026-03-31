@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OLARU — Seção 12: UI/UX Design</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #161820;
+    --surface2: #1e2028;
+    --border: #2a2d38;
+    --accent: #f0a500;
+    --accent2: #3b82f6;
+    --accent3: #10b981;
+    --danger: #ef4444;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --tag-bg: #1e2028;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(13,15,20,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex; align-items: center; gap: 2rem;
+    height: 56px;
+  }
+  .nav-logo { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 1rem; color: var(--accent); letter-spacing: -0.02em; }
+  .nav-links { display: flex; gap: 1.5rem; overflow-x: auto; flex: 1; }
+  .nav-links a { color: var(--muted); font-size: 0.8rem; text-decoration: none; white-space: nowrap; transition: color .2s; }
+  .nav-links a:hover { color: var(--text); }
+  .badge-new { background: var(--accent); color: #000; font-size: 0.6rem; font-weight: 700; padding: 1px 5px; border-radius: 3px; margin-left: 4px; vertical-align: middle; }
+
+  /* LAYOUT */
+  main { max-width: 1100px; margin: 0 auto; padding: 3rem 2rem 6rem; }
+
+  /* HERO */
+  .hero {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2.5rem;
+    margin-bottom: 3rem;
+    background: linear-gradient(135deg, #161820 0%, #1a1c26 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; top: -80px; right: -80px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(240,165,0,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-tag { font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.75rem; }
+  .hero h1 { font-size: 2.2rem; font-weight: 700; line-height: 1.2; margin-bottom: 0.75rem; }
+  .hero h1 span { color: var(--accent); }
+  .hero p { color: var(--muted); font-size: 1rem; max-width: 600px; }
+  .hero-meta { display: flex; gap: 2rem; margin-top: 1.75rem; flex-wrap: wrap; }
+  .hero-stat { }
+  .hero-stat .val { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+  .hero-stat .lbl { font-size: 0.75rem; color: var(--muted); }
+
+  /* SECTIONS */
+  .section { margin-bottom: 3.5rem; }
+  .section-header {
+    display: flex; align-items: center; gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    font-family: 'Space Mono', monospace; font-size: 0.7rem;
+    color: var(--accent); background: rgba(240,165,0,0.1);
+    border: 1px solid rgba(240,165,0,0.3);
+    padding: 2px 8px; border-radius: 4px;
+    white-space: nowrap;
+  }
+  .section-header h2 { font-size: 1.25rem; font-weight: 600; }
+
+  /* CARDS GRID */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+  @media(max-width: 768px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+  }
+  .card-title {
+    font-size: 0.85rem; font-weight: 600; margin-bottom: 0.75rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .card-title .dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .card ul { list-style: none; }
+  .card ul li {
+    font-size: 0.82rem; color: var(--muted); padding: 0.3rem 0;
+    border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 0.5rem;
+  }
+  .card ul li:last-child { border-bottom: none; }
+  .card ul li::before { content: '→'; color: var(--accent); flex-shrink: 0; font-size: 0.75rem; margin-top: 2px; }
+  .card p { font-size: 0.82rem; color: var(--muted); }
+
+  /* TAGS */
+  .tag { display: inline-block; font-size: 0.68rem; padding: 2px 8px; border-radius: 4px; font-weight: 500; }
+  .tag-yellow { background: rgba(240,165,0,0.15); color: var(--accent); border: 1px solid rgba(240,165,0,0.25); }
+  .tag-blue { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
+  .tag-green { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
+  .tag-red { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+
+  /* DESIGN TOKENS PALETTE */
+  .palette { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
+  .swatch {
+    display: flex; align-items: center; gap: 0.5rem;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.4rem 0.75rem;
+  }
+  .swatch-dot { width: 16px; height: 16px; border-radius: 4px; flex-shrink: 0; }
+  .swatch span { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--muted); }
+
+  /* TYPOGRAPHY SPECIMENS */
+  .type-specimen {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: 0.75rem;
+  }
+  .type-specimen .type-label { font-size: 0.68rem; color: var(--muted); margin-bottom: 0.4rem; font-family: 'Space Mono', monospace; }
+  .type-h1 { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+  .type-h2 { font-size: 1.25rem; font-weight: 600; }
+  .type-body { font-size: 0.875rem; color: var(--muted); }
+  .type-mono { font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--accent); }
+  .type-caption { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+
+  /* SPACING SCALE */
+  .spacing-scale { display: flex; align-items: flex-end; gap: 1rem; padding: 1rem; background: var(--surface2); border-radius: var(--radius); border: 1px solid var(--border); flex-wrap: wrap; }
+  .sp-item { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; }
+  .sp-bar { background: var(--accent); border-radius: 3px; width: 20px; }
+  .sp-label { font-family: 'Space Mono', monospace; font-size: 0.6rem; color: var(--muted); }
+
+  /* MOCKUPS */
+  .mockup-wrap {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+  }
+  .mockup-bar {
+    background: #0d0f14; border-bottom: 1px solid var(--border);
+    padding: 0.6rem 1rem; display: flex; align-items: center; gap: 0.5rem;
+  }
+  .mockup-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .mockup-body { padding: 1.25rem; }
+
+  /* DASHBOARD MOCKUP */
+  .dash-stats { display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .dash-stat {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.75rem 1rem; flex: 1; min-width: 120px;
+  }
+  .dash-stat .ds-num { font-family: 'Space Mono', monospace; font-size: 1.4rem; font-weight: 700; }
+  .dash-stat .ds-label { font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
+  .dash-stat .ds-trend { font-size: 0.68rem; margin-top: 6px; }
+
+  .dash-row { display: flex; gap: 0.75rem; }
+  .dash-table { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; flex: 1; overflow: hidden; }
+  .dt-head { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.75rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+  .dt-row { padding: 0.55rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.72rem; color: var(--muted); display: flex; justify-content: space-between; align-items: center; }
+  .dt-row:last-child { border-bottom: none; }
+  .dt-row .name { color: var(--text); font-weight: 500; }
+
+  /* KANBAN MOCKUP */
+  .kanban { display: flex; gap: 0.75rem; overflow-x: auto; padding-bottom: 0.5rem; }
+  .k-col { min-width: 150px; flex: 1; }
+  .k-col-head { font-size: 0.7rem; font-weight: 600; padding: 0.4rem 0.6rem; border-radius: 6px; margin-bottom: 0.5rem; display: flex; justify-content: space-between; }
+  .k-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.6rem 0.75rem; margin-bottom: 0.4rem;
+    font-size: 0.7rem;
+  }
+  .k-card .k-title { font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .k-card .k-sub { color: var(--muted); font-size: 0.65rem; }
+  .k-card .k-tag { margin-top: 5px; }
+
+  /* MOBILE MOCKUP */
+  .mobile-frame {
+    width: 220px; margin: 0 auto;
+    background: var(--surface); border: 2px solid var(--border);
+    border-radius: 28px; overflow: hidden;
+    box-shadow: 0 0 0 6px #0d0f14, 0 0 0 7px var(--border);
+  }
+  .mobile-statusbar {
+    background: #0d0f14; padding: 0.4rem 1rem;
+    display: flex; justify-content: space-between; font-size: 0.6rem; color: var(--muted);
+  }
+  .mobile-content { padding: 1rem; }
+  .mobile-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.75rem; }
+  .visit-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 0.75rem; margin-bottom: 0.5rem; font-size: 0.68rem;
+  }
+  .visit-card .v-name { font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .visit-card .v-addr { color: var(--muted); }
+  .visit-card .v-time { color: var(--accent); font-family: 'Space Mono', monospace; font-size: 0.65rem; margin-top: 4px; }
+  .btn-sm {
+    display: block; width: 100%; text-align: center;
+    border-radius: 8px; padding: 0.5rem; font-size: 0.7rem; font-weight: 600;
+    border: none; cursor: pointer; margin-top: 0.4rem;
+  }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+
+  /* OFFLINE BADGE */
+  .offline-badge {
+    background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 6px; padding: 0.3rem 0.5rem; font-size: 0.65rem;
+    color: #f87171; display: flex; align-items: center; gap: 0.3rem;
+    margin-bottom: 0.5rem;
+  }
+  .pulse { width: 6px; height: 6px; background: #f87171; border-radius: 50%; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+  /* STATES GRID */
+  .state-box {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.25rem; text-align: center;
+  }
+  .state-icon { font-size: 1.75rem; margin-bottom: 0.5rem; }
+  .state-title { font-size: 0.8rem; font-weight: 600; margin-bottom: 0.3rem; }
+  .state-desc { font-size: 0.7rem; color: var(--muted); }
+
+  /* SKELETON */
+  .skeleton { background: linear-gradient(90deg, var(--surface2) 25%, var(--border) 50%, var(--surface2) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 4px; }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  /* ACCESSIBILITY */
+  .a11y-item {
+    display: flex; gap: 1rem; padding: 0.75rem;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; margin-bottom: 0.5rem; align-items: flex-start;
+  }
+  .a11y-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+  .a11y-title { font-size: 0.8rem; font-weight: 600; }
+  .a11y-desc { font-size: 0.73rem; color: var(--muted); }
+
+  /* FEEDBACK PATTERNS */
+  .feedback-row { display: flex; gap: 0.75rem; margin-bottom: 0.75rem; }
+  .toast {
+    flex: 1; border-radius: 8px; padding: 0.65rem 0.9rem;
+    font-size: 0.75rem; display: flex; align-items: center; gap: 0.5rem;
+    border-left: 3px solid;
+  }
+  .toast-success { background: rgba(16,185,129,0.1); border-color: var(--accent3); color: #34d399; }
+  .toast-error { background: rgba(239,68,68,0.1); border-color: var(--danger); color: #f87171; }
+  .toast-warning { background: rgba(240,165,0,0.1); border-color: var(--accent); color: var(--accent); }
+  .toast-info { background: rgba(59,130,246,0.1); border-color: var(--accent2); color: #60a5fa; }
+
+  /* DECISION TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  th { background: var(--surface2); padding: 0.6rem 1rem; text-align: left; font-weight: 600; font-size: 0.75rem; border-bottom: 1px solid var(--border); color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  td { padding: 0.65rem 1rem; border-bottom: 1px solid var(--border); color: var(--muted); vertical-align: top; }
+  td:first-child { color: var(--text); font-weight: 500; }
+  tr:last-child td { border-bottom: none; }
+
+  /* CHECKLIST */
+  .checklist { list-style: none; }
+  .checklist li {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    padding: 0.6rem 0.75rem; border-radius: 7px;
+    font-size: 0.82rem; margin-bottom: 0.25rem;
+    background: var(--surface2); border: 1px solid var(--border);
+  }
+  .checklist li .ck { color: var(--accent3); font-weight: 700; flex-shrink: 0; }
+  .checklist li .ck-text { color: var(--text); }
+  .checklist li .ck-sub { color: var(--muted); font-size: 0.73rem; display: block; margin-top: 1px; }
+
+  /* CALLOUT */
+  .callout {
+    border: 1px solid; border-radius: var(--radius);
+    padding: 1rem 1.25rem; margin: 1rem 0;
+    font-size: 0.82rem;
+  }
+  .callout-yellow { background: rgba(240,165,0,0.07); border-color: rgba(240,165,0,0.3); color: #d4b96b; }
+  .callout-blue { background: rgba(59,130,246,0.07); border-color: rgba(59,130,246,0.3); color: #7db3f7; }
+  .callout-green { background: rgba(16,185,129,0.07); border-color: rgba(16,185,129,0.3); color: #5dcba7; }
+  .callout strong { font-weight: 700; }
+
+  hr.sep { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">OLARU</div>
+  <div class="nav-links">
+    <a href="#tokens">12.1 Design Tokens</a>
+    <a href="#tipografia">12.2 Tipografia</a>
+    <a href="#mockups">12.3 Mockups</a>
+    <a href="#estados">12.4 Estados</a>
+    <a href="#acessibilidade">12.5 Acessibilidade</a>
+    <a href="#feedback">12.6 Feedback</a>
+    <a href="#mobile">12.7 Mobile</a>
+    <a href="#performance">12.8 Performance UX</a>
+    <a href="#checklist">12.9 Checklist</a>
+    <a href="#pendencias">12.10 Novas Pendências</a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-tag">// Seção 12 — Adicionada</div>
+    <h1>Princípios de <span>UI/UX Design</span><br>para a Plataforma OLARU</h1>
+    <p>Diretrizes visuais, padrões de interação e critérios de acessibilidade para o painel administrativo Angular e a interface mobile dos técnicos de campo.</p>
+    <div class="hero-meta">
+      <div class="hero-stat"><div class="val">12</div><div class="lbl">Subsecções</div></div>
+      <div class="hero-stat"><div class="val">3</div><div class="lbl">Personas Cobertas</div></div>
+      <div class="hero-stat"><div class="val">WCAG 2.1</div><div class="lbl">Nível AA</div></div>
+      <div class="hero-stat"><div class="val">Mobile-First</div><div class="lbl">Estratégia</div></div>
+    </div>
+  </div>
+
+  <!-- 12.1 DESIGN TOKENS -->
+  <div class="section" id="tokens">
+    <div class="section-header">
+      <span class="section-num">12.1</span>
+      <h2>Sistema de Design Tokens</h2>
+    </div>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1.25rem;">
+      Todos os valores visuais devem ser definidos como tokens CSS centralizados, garantindo consistência e facilitando theming futuro (ex: modo escuro).
+    </p>
+
+    <div class="grid-2" style="margin-bottom:1rem;">
+      <div class="card">
+        <div class="card-title"><div class="dot" style="background:#f0a500;"></div>Paleta Primária — Construtech</div>
+        <div class="palette">
+          <div class="swatch"><div class="swatch-dot" style="background:#f0a500;"></div><span>--color-brand #F0A500</span></div>
+          <div class="swatch"><div class="swatch-dot" style="background:#1e2028;"></div><span>--color-surface #1E2028</span></div>
+          <div class="swatch"><div class="swatch-dot" style="background:#0d0f14;"></div><span>--color-bg #0D0F14</span></div>
+          <div class="swatch"><div class="swatch-dot" style="background:#e8eaf0;"></div><span>--color-text #E8EAF0</span></div>
+          <div class="swatch"><div class="swatch-dot" style="background:#3b82f6;"></div><span>--color-info #3B82F6</span></div>
+          <div class="swatch"><div class="swatch-dot" style="background:#10b981;"></div><span>--color-success #10B981</span></div>
+          <div class="swatch"><div class="swatch-dot" style="background:#ef4444;"></div><span>--color-danger #EF4444</span></div>
+          <div class="swatch"><div class="swatch-dot" style="background:#f59e0b;"></div><span>--color-warning #F59E0B</span></div>
+        </div>
+        <p style="margin-top:0.75rem;font-size:0.72rem;">
+          🎨 Paleta industrial/utilitária — âmbar como cor de autoridade reflete maquinário e construção. Evitar roxo ou gradientes genéricos de SaaS.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><div class="dot" style="background:#3b82f6;"></div>Escala de Espaçamento (Base 4px)</div>
+        <div class="spacing-scale">
+          <div class="sp-item"><div class="sp-bar" style="height:4px;"></div><span>sp-1<br>4px</span></div>
+          <div class="sp-item"><div class="sp-bar" style="height:8px;"></div><span>sp-2<br>8px</span></div>
+          <div class="sp-item"><div class="sp-bar" style="height:12px;"></div><span>sp-3<br>12px</span></div>
+          <div class="sp-item"><div class="sp-bar" style="height:16px;"></div><span>sp-4<br>16px</span></div>
+          <div class="sp-item"><div class="sp-bar" style="height:24px;"></div><span>sp-6<br>24px</span></div>
+          <div class="sp-item"><div class="sp-bar" style="height:32px;"></div><span>sp-8<br>32px</span></div>
+          <div class="sp-item"><div class="sp-bar" style="height:40px;"></div><span>sp-10<br>40px</span></div>
+          <div class="sp-item"><div class="sp-bar" style="height:48px;"></div><span>sp-12<br>48px</span></div>
+        </div>
+        <p style="font-size:0.72rem;margin-top:0.75rem;">
+          Aplicar escala de 4px em toda a UI via <code style="background:var(--surface2);padding:1px 4px;border-radius:3px;font-size:0.65rem;">--spacing-*</code>. Nunca usar valores arbitrários (ex: 13px, 22px).
+        </p>
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-title"><div class="dot" style="background:#10b981;"></div>Border Radius</div>
+        <ul>
+          <li>Botões e inputs: <strong>6px</strong></li>
+          <li>Cards e painéis: <strong>10px</strong></li>
+          <li>Modals: <strong>14px</strong></li>
+          <li>Chips/badges: <strong>4px</strong> (não pill)</li>
+          <li>Avatares: <strong>50%</strong></li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title"><div class="dot" style="background:#f59e0b;"></div>Sombras (Elevação)</div>
+        <ul>
+          <li>Level 0: sem sombra (painel flat)</li>
+          <li>Level 1: <code style="font-size:0.65rem;">0 1px 3px rgba(0,0,0,.4)</code></li>
+          <li>Level 2: <code style="font-size:0.65rem;">0 4px 12px rgba(0,0,0,.5)</code></li>
+          <li>Modal/Dropdown: Level 3 com overlay</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title"><div class="dot" style="background:#ef4444;"></div>Transições</div>
+        <ul>
+          <li>Hover states: <strong>150ms ease</strong></li>
+          <li>Fade-in cards: <strong>200ms ease-out</strong></li>
+          <li>Kanban drag: <strong>100ms</strong> (rápido)</li>
+          <li>Modals/sheets: <strong>250ms ease-in-out</strong></li>
+          <li>Nunca >400ms em ações de carga</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="sep">
+
+  <!-- 12.2 TIPOGRAFIA -->
+  <div class="section" id="tipografia">
+    <div class="section-header">
+      <span class="section-num">12.2</span>
+      <h2>Hierarquia Tipográfica</h2>
+    </div>
+
+    <div class="callout callout-yellow">
+      <strong>Recomendação de Fonte:</strong> Usar <strong>DM Sans</strong> para corpo (legível, profissional, não genérico) + <strong>Space Mono</strong> para números de dashboard, IDs, e dados de sistema. Evitar Inter — over-usado em SaaS.
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <div class="type-specimen">
+          <div class="type-label">-- HEADING 1 / DM Sans 700 / 32px</div>
+          <div class="type-h1">Dashboard de Gestão</div>
+        </div>
+        <div class="type-specimen">
+          <div class="type-label">-- HEADING 2 / DM Sans 600 / 20px</div>
+          <div class="type-h2">Visitas Técnicas Hoje</div>
+        </div>
+        <div class="type-specimen">
+          <div class="type-label">-- BODY / DM Sans 400 / 14px / line-height 1.6</div>
+          <div class="type-body">O cliente Silva & Cia solicitou visita técnica para instalação de betoneira no canteiro da Av. Brasil. Prioridade: alta.</div>
+        </div>
+      </div>
+      <div>
+        <div class="type-specimen">
+          <div class="type-label">-- DATA / Space Mono 700 / 28px</div>
+          <div class="type-mono" style="font-size:1.75rem;">47 leads · R$ 12.400</div>
+        </div>
+        <div class="type-specimen">
+          <div class="type-label">-- CAPTION / DM Sans 500 / 11px / uppercase</div>
+          <div class="type-caption">Status do sistema · Última atualização</div>
+        </div>
+        <div class="type-specimen">
+          <div class="type-label">-- LABEL INPUT / DM Sans 500 / 12px</div>
+          <div style="font-size:0.75rem;font-weight:500;color:#9ca3af;margin-bottom:4px;">HORÁRIO DE VISITA</div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.85rem;color:var(--text);">14:00 — Turno tarde</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="sep">
+
+  <!-- 12.3 MOCKUPS -->
+  <div class="section" id="mockups">
+    <div class="section-header">
+      <span class="section-num">12.3</span>
+      <h2>Wireframes de Alta Fidelidade</h2>
+    </div>
+
+    <!-- DASHBOARD -->
+    <p style="font-size:0.75rem;color:var(--muted);margin-bottom:0.75rem;font-family:'Space Mono',monospace;">// TELA 01 — Dashboard (Admin/Gerente)</p>
+    <div class="mockup-wrap" style="margin-bottom:1.5rem;">
+      <div class="mockup-bar">
+        <div class="mockup-dot" style="background:#ef4444;"></div>
+        <div class="mockup-dot" style="background:#f59e0b;"></div>
+        <div class="mockup-dot" style="background:#10b981;"></div>
+        <span style="font-size:0.65rem;color:var(--muted);margin-left:0.75rem;">app.olaru.com.br/dashboard</span>
+      </div>
+      <div class="mockup-body">
+        <div style="display:flex;gap:1rem;margin-bottom:1rem;align-items:center;">
+          <div style="font-size:1rem;font-weight:700;">Bom dia, Marcos 👷</div>
+          <span class="tag tag-green">● Sistema ativo</span>
+          <span style="margin-left:auto;font-size:0.72rem;color:var(--muted);font-family:'Space Mono',monospace;">Seg, 30 Mar 2026</span>
+        </div>
+        <div class="dash-stats">
+          <div class="dash-stat"><div class="ds-num" style="color:var(--accent);">12</div><div class="ds-label">Novos Leads Hoje</div><div class="ds-trend" style="color:#34d399;">↑ +3 vs ontem</div></div>
+          <div class="dash-stat"><div class="ds-num" style="color:#60a5fa;">8</div><div class="ds-label">Visitas do Dia</div><div class="ds-trend" style="color:var(--muted);">4 confirmadas</div></div>
+          <div class="dash-stat"><div class="ds-num" style="color:#34d399;">23</div><div class="ds-label">Máq. Disponíveis</div><div class="ds-trend" style="color:#f87171;">↓ 2 em manutenção</div></div>
+          <div class="dash-stat"><div class="ds-num" style="color:#f87171;">2</div><div class="ds-label">Handoffs Pendentes</div><div class="ds-trend" style="color:var(--muted);">requer atenção</div></div>
+        </div>
+        <div class="dash-row">
+          <div class="dash-table" style="flex:2;">
+            <div class="dt-head"><span>Novos Leads — WhatsApp</span><span class="tag tag-blue">Ver todos</span></div>
+            <div class="dt-row"><span class="name">Ricardo Mendes</span><span class="tag tag-yellow">locação</span><span style="font-size:0.65rem;">há 5 min</span></div>
+            <div class="dt-row"><span class="name">Construtora Vega</span><span class="tag tag-blue">visita</span><span style="font-size:0.65rem;">há 22 min</span></div>
+            <div class="dt-row"><span class="name">Ana Paula S.</span><span class="tag tag-green">qualificado</span><span style="font-size:0.65rem;">há 1h</span></div>
+            <div class="dt-row"><span class="name">Irmãos Carvalho</span><span class="tag tag-red">urgente</span><span style="font-size:0.65rem;">há 2h</span></div>
+          </div>
+          <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;">
+            <div class="dt-head"><span>Equipes em Campo</span></div>
+            <div class="dt-row"><span class="name">Equipe A</span><span class="tag tag-green">● ativa</span></div>
+            <div class="dt-row"><span class="name">Equipe B</span><span class="tag tag-yellow">● em rota</span></div>
+            <div class="dt-row"><span class="name">Equipe C</span><span class="tag tag-blue">● standby</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KANBAN -->
+    <p style="font-size:0.75rem;color:var(--muted);margin-bottom:0.75rem;font-family:'Space Mono',monospace;">// TELA 02 — Kanban de Visitas Técnicas</p>
+    <div class="callout callout-blue" style="margin-bottom:1rem;">
+      <strong>Detalhe crítico:</strong> Cards do Kanban devem mostrar <strong>cliente + endereço + equipe + turno</strong> na face principal, sem necessidade de expandir. Drag &amp; drop com feedback visual imediato (ghost card + highlight da coluna destino). Ação de <em>undo</em> (5s) após drop acidental.
+    </div>
+    <div class="mockup-wrap" style="margin-bottom:1.5rem;">
+      <div class="mockup-bar">
+        <div class="mockup-dot" style="background:#ef4444;"></div>
+        <div class="mockup-dot" style="background:#f59e0b;"></div>
+        <div class="mockup-dot" style="background:#10b981;"></div>
+        <span style="font-size:0.65rem;color:var(--muted);margin-left:0.75rem;">app.olaru.com.br/visitas/kanban</span>
+      </div>
+      <div class="mockup-body">
+        <div style="display:flex;gap:0.75rem;margin-bottom:0.75rem;align-items:center;">
+          <div style="font-size:0.9rem;font-weight:700;">Visitas Técnicas</div>
+          <span class="tag tag-blue">30 Mar 2026</span>
+          <div style="margin-left:auto;display:flex;gap:0.5rem;">
+            <span class="tag tag-yellow">Filtrar</span>
+            <span class="tag tag-blue">+ Nova Visita</span>
+          </div>
+        </div>
+        <div class="kanban">
+          <div class="k-col">
+            <div class="k-col-head" style="background:rgba(107,114,128,0.15);color:var(--muted);">Pendente <span>4</span></div>
+            <div class="k-card"><div class="k-title">Silva &amp; Cia</div><div class="k-sub">Av. Brasil, 1204</div><div class="k-sub">Equipe A · Tarde</div><div class="k-tag"><span class="tag tag-yellow">locação</span></div></div>
+            <div class="k-card"><div class="k-title">Construtora V.</div><div class="k-sub">R. das Pedras, 45</div><div class="k-sub">Sem equipe · Manhã</div><div class="k-tag"><span class="tag tag-red">urgente</span></div></div>
+          </div>
+          <div class="k-col">
+            <div class="k-col-head" style="background:rgba(59,130,246,0.1);color:#60a5fa;">Confirmada <span>3</span></div>
+            <div class="k-card" style="border-color:#3b82f6;"><div class="k-title">Mendes Obras</div><div class="k-sub">Estrada do Coco, 880</div><div class="k-sub">Equipe B · Integral</div><div class="k-tag"><span class="tag tag-blue">serviço</span></div></div>
+          </div>
+          <div class="k-col">
+            <div class="k-col-head" style="background:rgba(240,165,0,0.1);color:var(--accent);">Em Andamento <span>2</span></div>
+            <div class="k-card" style="border-color:var(--accent);"><div class="k-title">Irmãos Carvalho</div><div class="k-sub">R. Anchieta, 22</div><div class="k-sub">Equipe A · ● ao vivo</div><div class="k-tag"><span class="tag tag-yellow">serviço</span></div></div>
+          </div>
+          <div class="k-col">
+            <div class="k-col-head" style="background:rgba(16,185,129,0.1);color:#34d399;">Concluída <span>7</span></div>
+            <div class="k-card" style="opacity:0.6;"><div class="k-title">Ana Paula S.</div><div class="k-sub">Bairro Novo, 508</div><div class="k-sub">Equipe C · Manhã</div></div>
+          </div>
+          <div class="k-col">
+            <div class="k-col-head" style="background:rgba(239,68,68,0.1);color:#f87171;">Cancelada <span>1</span></div>
+            <div class="k-card" style="opacity:0.4;"><div class="k-title">Cia Real</div><div class="k-sub">cliente cancelou</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MOBILE -->
+    <p style="font-size:0.75rem;color:var(--muted);margin-bottom:0.75rem;font-family:'Space Mono',monospace;">// TELA 03 — App do Técnico (Mobile-First / PWA)</p>
+    <div style="display:flex;gap:2rem;flex-wrap:wrap;align-items:flex-start;">
+      <div class="mobile-frame">
+        <div class="mobile-statusbar"><span>09:42</span><span>● 4G 🔋</span></div>
+        <div class="mobile-content">
+          <div class="mobile-title">Minhas Visitas</div>
+          <div class="offline-badge"><div class="pulse"></div>Modo offline — 1 ação pendente</div>
+          <div class="visit-card" style="border-left:3px solid var(--accent);">
+            <div class="v-name">Silva &amp; Cia — Locação</div>
+            <div class="v-addr">Av. Brasil, 1204 — Bairro Centro</div>
+            <div class="v-time">🕒 14:00 · Turno tarde</div>
+            <button class="btn-sm btn-primary" style="margin-top:8px;">📍 Cheguei no Local</button>
+            <button class="btn-sm btn-outline" style="margin-top:4px;">Ver Detalhes</button>
+          </div>
+          <div class="visit-card" style="opacity:0.6;">
+            <div class="v-name">Mendes Obras</div>
+            <div class="v-addr">Estrada do Coco, 880</div>
+            <div class="v-time">🕒 Amanhã · 09:00</div>
+          </div>
+        </div>
+      </div>
+      <div style="flex:1;min-width:280px;">
+        <div class="card" style="margin-bottom:0.75rem;">
+          <div class="card-title"><div class="dot" style="background:var(--accent);"></div>Padrões UX Mobile</div>
+          <ul>
+            <li>Touch targets mínimos de <strong>44×44px</strong> (WCAG 2.5.5)</li>
+            <li>Botões principais fixos no <strong>bottom sheet</strong> (alcance do polegar)</li>
+            <li>Swipe-to-action nos cards de visita (ação secundária)</li>
+            <li>Scroll infinito apenas com <strong>pull-to-refresh</strong> explícito</li>
+            <li>Confirmação obrigatória antes de "Finalizar Visita"</li>
+            <li>Campo de observação + foto com câmera nativa via <code style="font-size:0.65rem;">input[capture]</code></li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title"><div class="dot" style="background:#f87171;"></div>Estratégia Offline-First</div>
+          <ul>
+            <li>Service Worker (PWA) armazena lista de visitas em <strong>Cache API</strong></li>
+            <li>Ações (Cheguei / Finalizar) enfileiradas no <strong>IndexedDB</strong></li>
+            <li>Indicador visual permanente de status de conexão</li>
+            <li>Sync automático ao reconectar — com toast de confirmação</li>
+            <li>Dados de visita nunca se perdem — persistência local garantida</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="sep">
+
+  <!-- 12.4 ESTADOS DE UI -->
+  <div class="section" id="estados">
+    <div class="section-header">
+      <span class="section-num">12.4</span>
+      <h2>Estados de Interface (UI States)</h2>
+    </div>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1.25rem;">
+      Todo componente que busca dados deve implementar <strong>todos os 5 estados</strong> abaixo. Nunca renderizar tela vazia sem tratamento.
+    </p>
+
+    <div class="grid-3" style="margin-bottom:1.5rem;">
+      <div class="state-box">
+        <div class="state-icon">⏳</div>
+        <div class="state-title">Loading (Skeleton)</div>
+        <div class="state-desc">Skeleton screens em vez de spinners genéricos. Mesma estrutura visual do conteúdo real.</div>
+        <div style="margin-top:0.75rem;">
+          <div class="skeleton" style="height:14px;width:80%;margin-bottom:6px;"></div>
+          <div class="skeleton" style="height:10px;width:60%;margin-bottom:6px;"></div>
+          <div class="skeleton" style="height:10px;width:70%;"></div>
+        </div>
+      </div>
+      <div class="state-box">
+        <div class="state-icon">📭</div>
+        <div class="state-title">Empty State</div>
+        <div class="state-desc">Mensagem contextual + ação primária. Ex: "Nenhuma visita hoje. <u>Criar primeira visita →</u>"</div>
+      </div>
+      <div class="state-box">
+        <div class="state-icon">💥</div>
+        <div class="state-title">Error State</div>
+        <div class="state-desc">Mensagem amigável, sem jargão técnico + botão "Tentar novamente". Logar erro no console para debug.</div>
+      </div>
+      <div class="state-box">
+        <div class="state-icon">✅</div>
+        <div class="state-title">Success State</div>
+        <div class="state-desc">Toast de confirmação com ação de desfazer quando cabível. Duração: 4–5 segundos.</div>
+      </div>
+      <div class="state-box">
+        <div class="state-icon">🚫</div>
+        <div class="state-title">Disabled State</div>
+        <div class="state-desc">Opacidade 40%. Cursor not-allowed. Tooltip explicando o motivo (ex: "Sem permissão de gerente").</div>
+      </div>
+      <div class="state-box">
+        <div class="state-icon">📶</div>
+        <div class="state-title">Offline State (Mobile)</div>
+        <div class="state-desc">Banner persistente âmbar no topo. Ações locais habilitadas. Dados sincronizados em background.</div>
+      </div>
+    </div>
+
+    <div class="callout callout-green">
+      <strong>Regra de Ouro:</strong> Nenhuma tela pode exibir uma lista ou tabela vazia sem orientar o usuário sobre o próximo passo. Um estado vazio bem projetado reduz abandono e confusão.
+    </div>
+  </div>
+
+  <hr class="sep">
+
+  <!-- 12.5 ACESSIBILIDADE -->
+  <div class="section" id="acessibilidade">
+    <div class="section-header">
+      <span class="section-num">12.5</span>
+      <h2>Acessibilidade (WCAG 2.1 — Nível AA)</h2>
+    </div>
+
+    <div class="a11y-item"><div class="a11y-icon">🎨</div><div><div class="a11y-title">Contraste de Cor</div><div class="a11y-desc">Texto sobre fundo: mínimo 4.5:1 (normal) e 3:1 (grande/bold). Usar ferramenta de contraste no Figma ou browser DevTools. Não transmitir informação exclusivamente por cor — sempre associar ícone ou texto.</div></div></div>
+
+    <div class="a11y-item"><div class="a11y-icon">⌨️</div><div><div class="a11y-title">Navegação por Teclado</div><div class="a11y-desc">Todo elemento interativo deve ser alcançável via Tab. Focus ring visível e com contraste. Kanban deve suportar mover cards com teclado (Space para pegar, arrow keys para mover, Enter para soltar — padrão ARIA).</div></div></div>
+
+    <div class="a11y-item"><div class="a11y-icon">🏷️</div><div><div class="a11y-title">Semântica HTML e ARIA</div><div class="a11y-desc">Usar &lt;button&gt; para ações, &lt;a&gt; para navegação. Adicionar aria-label em ícones sem texto. Kanban: role="list" nas colunas, role="listitem" nos cards, aria-grabbed e aria-dropeffect no drag-and-drop.</div></div></div>
+
+    <div class="a11y-item"><div class="a11y-icon">🔊</div><div><div class="a11y-title">Leitores de Tela</div><div class="a11y-desc">Testar com NVDA (Windows) ou VoiceOver (iOS/macOS) as telas críticas: login, dashboard, Kanban e formulário de visita. Anunciar atualizações em tempo real (SSE/WebSocket) com aria-live="polite".</div></div></div>
+
+    <div class="a11y-item"><div class="a11y-icon">📱</div><div><div class="a11y-title">Touch Targets (Mobile)</div><div class="a11y-desc">Área mínima de toque: 44×44px (Apple HIG) ou 48×48px (Material Design). Espaçamento entre botões adjacentes: mínimo 8px para evitar toques errados, crítico no contexto de campo do técnico.</div></div></div>
+
+    <div class="a11y-item"><div class="a11y-icon">🌓</div><div><div class="a11y-title">Preferências do Sistema</div><div class="a11y-desc">Respeitar prefers-reduced-motion: desabilitar animações para usuários com epilepsia ou sensibilidade vestibular. Implementar via @media query em CSS e no Angular Animation Builder.</div></div></div>
+  </div>
+
+  <hr class="sep">
+
+  <!-- 12.6 FEEDBACK -->
+  <div class="section" id="feedback">
+    <div class="section-header">
+      <span class="section-num">12.6</span>
+      <h2>Padrões de Feedback Visual</h2>
+    </div>
+
+    <div class="feedback-row">
+      <div class="toast toast-success">✅ Visita agendada com sucesso para 30 Mar, 14:00 — Equipe A.</div>
+    </div>
+    <div class="feedback-row">
+      <div class="toast toast-error">❌ Erro ao salvar: equipe não disponível neste horário. Tente outro turno.</div>
+    </div>
+    <div class="feedback-row">
+      <div class="toast toast-warning">⚠️ Você está prestes a cancelar uma visita confirmada. Esta ação notificará o cliente.</div>
+    </div>
+    <div class="feedback-row">
+      <div class="toast toast-info">ℹ️ Nova mensagem do lead Silva &amp; Cia no Chatwoot. <u style="cursor:pointer;">Abrir conversa →</u></div>
+    </div>
+
+    <div class="grid-2" style="margin-top:1rem;">
+      <div class="card">
+        <div class="card-title"><div class="dot" style="background:var(--accent);"></div>Toasts e Notificações</div>
+        <ul>
+          <li>Posição: <strong>bottom-right</strong> no desktop, <strong>top-center</strong> no mobile</li>
+          <li>Duração: 4s (info), 5s (sucesso), <strong>persistente</strong> (erro crítico)</li>
+          <li>Máximo 3 toasts simultâneos — empilhar verticalmente</li>
+          <li>Botão X sempre visível para dispensar manualmente</li>
+          <li>Ação de Undo para operações destrutivas (5s)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title"><div class="dot" style="background:#60a5fa;"></div>Confirmações Destrutivas</div>
+        <ul>
+          <li>Modal de confirmação para: cancelar visita, excluir máquina, inativar equipe</li>
+          <li>Botão destrutivo: <strong>vermelho, à direita</strong>, não é o padrão/primeiro foco</li>
+          <li>Texto do botão: verbo da ação — "Cancelar Visita" e não apenas "Confirmar"</li>
+          <li>Double-confirmation (digitar nome) para ações irreversíveis de alta criticidade</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="sep">
+
+  <!-- 12.7 MOBILE -->
+  <div class="section" id="mobile">
+    <div class="section-header">
+      <span class="section-num">12.7</span>
+      <h2>Estratégia Responsiva e PWA</h2>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title"><div class="dot" style="background:#10b981;"></div>Breakpoints (Angular CDK)</div>
+        <table>
+          <thead><tr><th>Nome</th><th>Min-width</th><th>Contexto</th></tr></thead>
+          <tbody>
+            <tr><td>xs</td><td>—</td><td>Técnico em campo (360px)</td></tr>
+            <tr><td>sm</td><td>480px</td><td>Mobile grande, tablets menores</td></tr>
+            <tr><td>md</td><td>768px</td><td>Tablet (iPad)</td></tr>
+            <tr><td>lg</td><td>1024px</td><td>Desktop inicial</td></tr>
+            <tr><td>xl</td><td>1280px</td><td>Desktop gerente/admin</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title"><div class="dot" style="background:#f59e0b;"></div>Checklist PWA para Técnicos</div>
+        <ul>
+          <li>Manifest.json com <code style="font-size:0.65rem;">display: standalone</code> e ícones (192×192 e 512×512)</li>
+          <li>Service Worker via <code style="font-size:0.65rem;">@angular/service-worker</code> (ngsw)</li>
+          <li>Precache das telas de visita e assets críticos</li>
+          <li>Background Sync API para fila offline</li>
+          <li>Push Notifications para novas visitas atribuídas</li>
+          <li>Splash screen e theme-color no manifest</li>
+          <li>Testar limitação de câmera no <strong>iOS Safari</strong> (issue aberto #4 na spec)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="sep">
+
+  <!-- 12.8 PERFORMANCE UX -->
+  <div class="section" id="performance">
+    <div class="section-header">
+      <span class="section-num">12.8</span>
+      <h2>Performance Percebida (UX de Velocidade)</h2>
+    </div>
+    <div class="callout callout-yellow">
+      <strong>Princípio:</strong> O app não precisa ser rápido — precisa <em>parecer</em> rápido. Técnicas de perceived performance são tão importantes quanto otimizações reais.
+    </div>
+
+    <div class="grid-3" style="margin-top:1rem;">
+      <div class="card">
+        <div class="card-title"><div class="dot" style="background:var(--accent);"></div>Otimistic UI</div>
+        <ul>
+          <li>Atualizar o Kanban <strong>antes</strong> da confirmação do servidor</li>
+          <li>Reverter automaticamente em caso de erro da API</li>
+          <li>Aplicar em: trocar status, confirmar visita, check-in técnico</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title"><div class="dot" style="background:#60a5fa;"></div>Lazy Loading Angular</div>
+        <ul>
+          <li>Módulo de relatórios: carregado apenas ao acessar a rota</li>
+          <li>Módulo de configurações do robô: lazy (uso raro)</li>
+          <li>Imagens de fotos de visita: <code style="font-size:0.65rem;">loading="lazy"</code></li>
+          <li>Bundle inicial &lt; 300KB (gzip)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title"><div class="dot" style="background:#34d399;"></div>Core Web Vitals</div>
+        <ul>
+          <li>LCP (Largest Contentful Paint): &lt; <strong>2.5s</strong></li>
+          <li>FID / INP: &lt; <strong>100ms</strong></li>
+          <li>CLS (Layout Shift): &lt; <strong>0.1</strong></li>
+          <li>Medir com Lighthouse CI no pipeline de deploy</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="sep">
+
+  <!-- 12.9 CHECKLIST -->
+  <div class="section" id="checklist">
+    <div class="section-header">
+      <span class="section-num">12.9</span>
+      <h2>Checklist de UI/UX para Deploy</h2>
+    </div>
+    <ul class="checklist">
+      <li><span class="ck">✓</span><div><span class="ck-text">Design tokens implementados como variáveis CSS globais</span><span class="ck-sub">Arquivo: src/styles/_tokens.scss</span></div></li>
+      <li><span class="ck">✓</span><div><span class="ck-text">Fontes DM Sans + Space Mono carregadas via Google Fonts com font-display: swap</span><span class="ck-sub">Evita FOUT (Flash of Unstyled Text)</span></div></li>
+      <li><span class="ck">✓</span><div><span class="ck-text">Todos os 5 estados de UI implementados (loading, empty, error, success, disabled)</span><span class="ck-sub">Skeleton screens para: dashboard, tabela de leads, Kanban</span></div></li>
+      <li><span class="ck">✓</span><div><span class="ck-text">Teste de contraste WCAG AA aprovado para todas as combinações de texto/fundo</span><span class="ck-sub">Usar: webaim.org/resources/contrastchecker</span></div></li>
+      <li><span class="ck">✓</span><div><span class="ck-text">Kanban com suporte a teclado e ARIA (role, aria-grabbed, aria-live)</span><span class="ck-sub">Testar com Tab + Space + Arrow Keys</span></div></li>
+      <li><span class="ck">✓</span><div><span class="ck-text">Touch targets ≥ 44×44px no app do técnico (mobile)</span><span class="ck-sub">Auditar com Chrome DevTools > Rendering > Show layout shift regions</span></div></li>
+      <li><span class="ck">✓</span><div><span class="ck-text">PWA: manifest.json, service worker, ícones e splash screen configurados</span><span class="ck-sub">Testar instalação no Android Chrome e iOS Safari</span></div></li>
+      <li><span class="ck">✓</span><div><span class="ck-text">Modo offline implementado com IndexedDB + Background Sync</span><span class="ck-sub">Simular no DevTools: Network > Offline</span></div></li>
+      <li><span class="ck">✓</span><div><span class="ck-text">Toasts e confirmações destrutivas padronizados em todo o app</span><span class="ck-sub">Serviço central de notificações (Angular Service + CDK Overlay)</span></div></li>
+      <li><span class="ck">✓</span><div><span class="ck-text">prefers-reduced-motion respeitado (desabilita animações)</span><span class="ck-sub">@media (prefers-reduced-motion: reduce) em CSS</span></div></li>
+      <li><span class="ck">✓</span><div><span class="ck-text">Lighthouse CI &lt; LCP 2.5s, CLS &lt; 0.1, INP &lt; 100ms</span><span class="ck-sub">Integrar no GitHub Actions/pipeline CI</span></div></li>
+      <li><span class="ck">✓</span><div><span class="ck-text">Onboarding do primeiro acesso implementado (admin)</span><span class="ck-sub">Wizard: criar primeira equipe → cadastrar máquina → testar robô</span></div></li>
+    </ul>
+  </div>
+
+  <hr class="sep">
+
+  <!-- 12.10 NOVAS PENDÊNCIAS -->
+  <div class="section" id="pendencias">
+    <div class="section-header">
+      <span class="section-num">12.10</span>
+      <h2>Novas Decisões em Aberto (UI/UX)</h2>
+      <span class="badge-new">NOVO</span>
+    </div>
+    <table>
+      <thead>
+        <tr><th>#</th><th>Decisão</th><th>Opção A</th><th>Opção B</th><th>Impacto</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>6</td>
+          <td>Tema padrão do painel</td>
+          <td><span class="tag tag-blue">Dark (conforme este doc)</span></td>
+          <td>Light com toggle</td>
+          <td>Dark reduz fadiga em uso prolongado; Light é mais familiar para gerentes não-técnicos</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td>Kanban: biblioteca drag-and-drop</td>
+          <td>CDK DragDrop (nativo Angular)</td>
+          <td><span class="tag tag-blue">@dnd-kit (mais flexível)</span></td>
+          <td>CDK é zero-dep; @dnd-kit tem melhor suporte a teclado e touch simultâneos</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td>Notificações push para técnicos</td>
+          <td>Web Push API (PWA)</td>
+          <td>WhatsApp via robô</td>
+          <td>Web Push requer permissão do browser; WhatsApp é mais confiável mas usa tokens do robô</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td>Idioma do sistema</td>
+          <td>Português (BR) fixo</td>
+          <td>i18n desde o início (pt-BR + es)</td>
+          <td>i18n add ~15% custo de desenvolvimento; expandir para construtoras de outros países no futuro?</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td>Onboarding de novos admins</td>
+          <td>Wizard guiado na 1ª entrada</td>
+          <td>Vídeo tutorial externo + docs</td>
+          <td>Wizard reduz suporte, mas adiciona complexidade ao frontend</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- FOOTER -->
+  <div style="border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem 1.5rem; margin-top: 2rem; background: var(--surface); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+    <div>
+      <div style="font-family:'Space Mono',monospace;font-size:0.75rem;color:var(--accent);">OLARU — SaaS Construtech</div>
+      <div style="font-size:0.72rem;color:var(--muted);">Seção 12 · Revisão 1.0 · Março 2026</div>
+    </div>
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+      <span class="tag tag-green">WCAG 2.1 AA</span>
+      <span class="tag tag-blue">Angular 17+</span>
+      <span class="tag tag-yellow">Mobile-First</span>
+      <span class="tag tag-blue">PWA Ready</span>
+    </div>
+  </div>
+
+</main>
+</body>
+</html>

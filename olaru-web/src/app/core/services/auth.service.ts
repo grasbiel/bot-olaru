@@ -13,7 +13,7 @@ export class AuthService {
 
   login(credentials: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/login`, credentials).pipe(
-      tap(res => {
+      tap((res: any) => {
         if (res && res.token) {
           sessionStorage.setItem('olaru_token', res.token);
           // Decodificar token para pegar o perfil se necessário
