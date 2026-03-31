@@ -1,7 +1,7 @@
 import random
 import asyncio
 from agno.agent import Agent
-from agno.memory import AgentMemory
+from agno.memory import Memory
 from agno.models.groq import Groq
 from agno.models.google import Gemini
 from agno.memory.db.postgres import PostgresMemoryDb
