@@ -14,10 +14,11 @@ Chart.register(...registerables);
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, AfterViewInit {
   private dashboardService = inject(DashboardService);
 
   @ViewChild('evolucaoChart') evolucaoChart!: ElementRef;
+  private chartInstance: any;
 
   indicadores: any = {
     totalLeads: 0,
@@ -30,18 +31,34 @@ export class DashboardComponent implements OnInit {
     this.carregarIndicadores();
   }
 
-  carregarIndicadores() {
-    this.dashboardService.obterIndicadores().subscribe(data => {
-      this.indicadores = data;
-    });
+  ngAfterViewInit() {
+    this.carregarEvolucao();
+  }
 
-    this.dashboardService.obterEvolucao().subscribe(data => {
-      this.renderizarGrafico(data);
+  carregarIndicadores() {
+    this.dashboardService.obterIndicadores().subscribe({
+      next: data => this.indicadores = data,
+      error: err => console.error('Erro ao carregar indicadores:', err)
+    });
+  }
+
+  carregarEvolucao() {
+    this.dashboardService.obterEvolucao().subscribe({
+      next: data => {
+        if (this.evolucaoChart) {
+          this.renderizarGrafico(data);
+        }
+      },
+      error: err => console.error('Erro ao carregar evolução:', err)
     });
   }
 
   renderizarGrafico(data: any) {
-    new Chart(this.evolucaoChart.nativeElement, {
+    if (this.chartInstance) {
+      this.chartInstance.destroy();
+    }
+
+    this.chartInstance = new Chart(this.evolucaoChart.nativeElement, {
       type: 'line',
       data: {
         labels: data.labels,

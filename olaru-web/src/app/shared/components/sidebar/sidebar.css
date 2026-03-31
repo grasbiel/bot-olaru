@@ -1,5 +1,11 @@
-.sidebar {
+:host {
+  display: block;
   width: 260px;
+  flex-shrink: 0;
+}
+
+.sidebar {
+  width: 100%;
   background-color: var(--secondary);
   color: white;
   display: flex;
