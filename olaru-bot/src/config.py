@@ -43,7 +43,7 @@ DB_PASS = os.getenv("DB_PASS", "72d889c22343e475218d")
 DB_PORT = os.getenv("DB_PORT", "5432")
 
 # Redis
-REDIS_HOST = os.getenv("REDIS_HOST", "redis")
+REDIS_HOST = os.getenv("REDIS_HOST", "db-redis")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 REDIS_PASS = os.getenv("REDIS_PASS")
 
