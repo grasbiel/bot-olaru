@@ -46,7 +46,7 @@ def criar_agente():
             "- Faça apenas UMA pergunta por vez.",
             "- NUNCA informe preços. O consultor enviará o orçamento personalizado.",
         ],
-        tools=[buscar_dados_cliente, verificar_estoque, consultar_disponibilidade_agenda, registrar_visita_tecnica, iniciar_handoff_humano],
+        tools=[buscar_dados_cliente, verificar_estoque, consultar_disponibilidade_agenda, registrar_visita_tecnica],
         db=storage,
         update_memory_on_run=True,
         add_history_to_context=True,
