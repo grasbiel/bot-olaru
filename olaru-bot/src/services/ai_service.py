@@ -9,8 +9,7 @@ from src.services.chatwoot import enviar_mensagem_chatwoot, adicionar_etiqueta_c
 from src.services.utils import verificar_limite_mensagens, incrementar_contador_mensagens
 from src.tools.api_tools import (
     buscar_dados_cliente, verificar_estoque, 
-    consultar_disponibilidade_agenda, registrar_visita_tecnica, 
-    iniciar_handoff_humano
+    consultar_disponibilidade_agenda, registrar_visita_tecnica
 )
 
 def obter_modelo():
