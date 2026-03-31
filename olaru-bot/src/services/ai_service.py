@@ -52,7 +52,7 @@ def criar_agente():
         ],
         tools=[buscar_dados_cliente, verificar_estoque, consultar_disponibilidade_agenda, registrar_visita_tecnica, iniciar_handoff_humano],
         db=storage,
-        memory=AgentMemory(db=memory_db, create_user_memories=True, update_user_memories_on_run=True),
+        memory=Memory(db=memory_db, create_user_memories=True, update_user_memories_on_run=True),
         add_history_to_context=True,
         num_history_messages=12,
         markdown=False
