@@ -20,15 +20,38 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   @ViewChild('evolucaoChart') evolucaoChart!: ElementRef;
   private chartInstance: any;
 
+  usuarioNome: string = 'Admin';
+  saudacao: string = '';
+  dataHoje: string = '';
+
   indicadores: any = {
-    totalLeads: 0,
-    visitasPendentes: 0,
-    visitasConcluidas: 0,
-    taxaConversao: 0
+    novosLeadsHoje: 0,
+    visitasDoDia: 0,
+    maquinasDisponiveis: 0,
+    handoffsPendentes: 0
   };
 
   ngOnInit() {
+    this.definirSaudacao();
     this.carregarIndicadores();
+  }
+
+  definirSaudacao() {
+    const hora = new Date().getHours();
+    if (hora < 12) this.saudacao = 'Bom dia';
+    else if (hora < 18) this.saudacao = 'Boa tarde';
+    else this.saudacao = 'Boa noite';
+
+    this.dataHoje = new Intl.DateTimeFormat('pt-BR', { 
+      weekday: 'long', 
+      day: 'numeric', 
+      month: 'long', 
+      year: 'numeric' 
+    }).format(new Date());
+
+    // Tentar pegar nome do usuário do storage
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.nome) this.usuarioNome = user.nome.split(' ')[0];
   }
 
   ngAfterViewInit() {
@@ -37,7 +60,15 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   carregarIndicadores() {
     this.dashboardService.obterIndicadores().subscribe({
-      next: data => this.indicadores = data,
+      next: data => {
+        // Mapeia do backend (versão antiga) para os novos campos da UI
+        this.indicadores = {
+          novosLeadsHoje: data.totalLeads || 0,
+          visitasDoDia: data.visitasPendentes || 0,
+          maquinasDisponiveis: data.totalMaquinas || 0, // Ajuste se o backend retornar
+          handoffsPendentes: 0 // Mock por enquanto
+        };
+      },
       error: err => console.error('Erro ao carregar indicadores:', err)
     });
   }
@@ -66,16 +97,16 @@ export class DashboardComponent implements OnInit, AfterViewInit {
           {
             label: 'Leads Qualificados',
             data: data.leads,
-            borderColor: '#3b82f6',
-            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            borderColor: '#F0A500', // Âmbar da marca
+            backgroundColor: 'rgba(240, 165, 0, 0.1)',
             fill: true,
             tension: 0.4
           },
           {
             label: 'Visitas Técnicas',
             data: data.visitas,
-            borderColor: '#10b981',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            borderColor: '#3b82f6', // Azul info
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
             fill: true,
             tension: 0.4
           }
@@ -85,11 +116,21 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: 'bottom' }
+          legend: { 
+            position: 'bottom',
+            labels: { color: '#E8EAF0' } // Cor do texto da legenda
+          }
         },
         scales: {
-          y: { beginAtZero: true, grid: { display: false } },
-          x: { grid: { display: false } }
+          y: { 
+            beginAtZero: true, 
+            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+            ticks: { color: '#9CA3AF' } 
+          },
+          x: { 
+            grid: { display: false },
+            ticks: { color: '#9CA3AF' }
+          }
         }
       }
     });

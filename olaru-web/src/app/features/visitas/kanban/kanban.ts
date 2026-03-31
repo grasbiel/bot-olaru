@@ -26,7 +26,8 @@ export class KanbanComponent implements OnInit, OnDestroy {
     { title: 'Pendente', status: 'pendente', cards: [] as any[] },
     { title: 'Confirmada', status: 'confirmada', cards: [] as any[] },
     { title: 'Em Andamento', status: 'em_andamento', cards: [] as any[] },
-    { title: 'Concluída', status: 'concluida', cards: [] as any[] }
+    { title: 'Concluída', status: 'concluida', cards: [] as any[] },
+    { title: 'Cancelada', status: 'cancelada', cards: [] as any[] }
   ];
 
   ngOnInit() {

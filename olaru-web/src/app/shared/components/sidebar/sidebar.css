@@ -2,12 +2,13 @@
   display: block;
   width: 260px;
   flex-shrink: 0;
+  border-right: 1px solid var(--color-border);
 }
 
 .sidebar {
   width: 100%;
-  background-color: var(--secondary);
-  color: white;
+  background-color: var(--color-surface);
+  color: var(--color-text);
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -16,58 +17,59 @@
 }
 
 .sidebar-brand {
-  padding: 32px 24px;
+  padding: var(--spacing-8) var(--spacing-6);
   text-align: center;
 }
 
 .sidebar-brand .logo {
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--primary);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--color-brand);
   letter-spacing: 2px;
 }
 
 .sidebar-nav {
   flex: 1;
-  padding: 0 16px;
+  padding: 0 var(--spacing-4);
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  padding: 14px 16px;
-  color: #aeb7c0;
+  padding: var(--spacing-4);
+  color: var(--color-text-secondary);
   text-decoration: none;
-  border-radius: 8px;
-  margin-bottom: 4px;
-  transition: all 0.2s;
-  font-weight: 500;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-1);
+  transition: all var(--transition-base, 200ms);
+  font-weight: var(--font-medium);
 }
 
 .nav-item:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  color: white;
+  background-color: var(--color-surface-2);
+  color: var(--color-text);
 }
 
 .nav-item.active {
-  background-color: var(--primary);
-  color: white;
+  background-color: var(--color-brand-subtle);
+  color: var(--color-brand);
+  border-left: 3px solid var(--color-brand);
 }
 
 .nav-item .icon {
-  margin-right: 12px;
-  font-size: 18px;
+  margin-right: var(--spacing-3);
+  font-size: var(--text-md);
 }
 
 .sidebar-footer {
-  padding: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: var(--spacing-4);
+  border-top: 1px solid var(--color-border);
 }
 
 .logout {
-  color: #ff4d4d !important;
+  color: var(--color-danger) !important;
 }
 
 .logout:hover {
-  background-color: rgba(255, 77, 77, 0.1) !important;
+  background-color: var(--color-danger-subtle) !important;
 }

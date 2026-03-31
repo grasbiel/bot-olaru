@@ -7,29 +7,29 @@
     <main class="content-body">
       <header class="content-header">
         <div class="header-info">
-          <h1>Gerenciamento de Máquinas</h1>
-          <p>Cadastre e controle o estoque de equipamentos da frota.</p>
+          <h1>Frota de Máquinas</h1>
+          <p>Controle de inventário e disponibilidade para locação.</p>
         </div>
         <button class="btn-primary" (click)="novoCadastro()" *ngIf="!exibirForm">
-          + Nova Máquina
+          + Cadastrar Equipamento
         </button>
       </header>
 
       <!-- Formulário de Cadastro/Edição -->
       <div class="card form-card" *ngIf="exibirForm">
-        <h3>{{ maquinaSelecionada.id ? 'Editar Máquina' : 'Novo Cadastro' }}</h3>
+        <h3>{{ maquinaSelecionada.id ? 'Editar Equipamento' : 'Novo Cadastro' }}</h3>
         <form (submit)="salvar()" class="grid-form">
           <div class="form-group">
             <label>Nome do Equipamento</label>
-            <input type="text" [(ngModel)]="maquinaSelecionada.nome" name="nome" required placeholder="Ex: Escavadeira Hidráulica">
+            <input type="text" [(ngModel)]="maquinaSelecionada.nome" name="nome" required placeholder="Ex: Escavadeira Hidráulica X-200">
           </div>
           <div class="form-group">
-            <label>Descrição</label>
-            <input type="text" [(ngModel)]="maquinaSelecionada.descricao" name="descricao" placeholder="Detalhes técnicos">
+            <label>Descrição Técnica</label>
+            <input type="text" [(ngModel)]="maquinaSelecionada.descricao" name="descricao" placeholder="Modelo, ano e especificações principais">
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Qtd. Total</label>
+              <label>Quantidade Total</label>
               <input type="number" [(ngModel)]="maquinaSelecionada.quantidadeTotal" name="total" required>
             </div>
             <div class="form-group">
@@ -38,7 +38,7 @@
             </div>
             <div class="form-group">
               <label>Valor Diária (R$)</label>
-              <input type="number" [(ngModel)]="maquinaSelecionada.valorDiaria" name="valor" step="0.01">
+              <input type="number" [(ngModel)]="maquinaSelecionada.valorDiaria" name="valor" step="0.01" placeholder="0.00">
             </div>
           </div>
           <div class="form-actions">
@@ -53,10 +53,10 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>Nome</th>
-              <th>Total</th>
-              <th>Disponível</th>
-              <th>Diária</th>
+              <th>Equipamento / Detalhes</th>
+              <th class="text-center">Estoque Total</th>
+              <th class="text-center">Disponibilidade</th>
+              <th class="text-right">Valor Diária</th>
               <th>Status</th>
               <th>Ações</th>
             </tr>
@@ -66,16 +66,16 @@
               <td>
                 <div class="machine-info">
                   <strong>{{ m.nome }}</strong>
-                  <span>{{ m.descricao }}</span>
+                  <span>{{ m.descricao || 'Sem descrição cadastrada' }}</span>
                 </div>
               </td>
-              <td>{{ m.quantidadeTotal }}</td>
-              <td>
+              <td class="text-center numeric-value">{{ m.quantidadeTotal }}</td>
+              <td class="text-center">
                 <span class="stock-badge" [ngClass]="m.quantidadeDisponivel > 0 ? 'in-stock' : 'out-of-stock'">
-                  {{ m.quantidadeDisponivel }}
+                  {{ m.quantidadeDisponivel }} {{ m.quantidadeDisponivel === 1 ? 'unid.' : 'unid.' }}
                 </span>
               </td>
-              <td>{{ m.valorDiaria | currency:'BRL' }}</td>
+              <td class="text-right price-value">{{ m.valorDiaria | currency:'BRL' }}</td>
               <td>
                 <span class="status-dot" [ngClass]="m.ativo ? 'active' : 'inactive'"></span>
                 {{ m.ativo ? 'Ativo' : 'Inativo' }}
@@ -86,7 +86,10 @@
               </td>
             </tr>
             <tr *ngIf="maquinas.length === 0">
-              <td colspan="6" class="empty-state">Nenhuma máquina cadastrada.</td>
+              <td colspan="6" class="empty-state">
+                <div style="font-size: 40px; margin-bottom: 10px;">🏗️</div>
+                Nenhuma máquina cadastrada no inventário.
+              </td>
             </tr>
           </tbody>
         </table>

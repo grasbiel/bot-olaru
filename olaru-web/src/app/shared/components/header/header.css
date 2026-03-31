@@ -8,29 +8,31 @@
 
 .header {
   height: 80px;
-  background-color: white;
-  border-bottom: 1px solid #eee;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 32px;
+  padding: 0 var(--spacing-8);
 }
 
 .search-bar {
   display: flex;
   align-items: center;
-  background-color: #f5f5f5;
-  padding: 8px 16px;
-  border-radius: 8px;
+  background-color: var(--color-surface-2);
+  padding: var(--spacing-2) var(--spacing-4);
+  border-radius: var(--radius-md);
   width: 400px;
+  border: 1px solid var(--color-border);
 }
 
 .search-bar input {
   background: none;
   border: none;
-  margin-left: 8px;
+  margin-left: var(--spacing-2);
   flex: 1;
-  font-size: 14px;
+  font-size: var(--text-base);
+  color: var(--color-text);
 }
 
 .search-bar input:focus {
@@ -44,45 +46,46 @@
 
 .notifications {
   position: relative;
-  margin-right: 24px;
+  margin-right: var(--spacing-6);
   cursor: pointer;
-  font-size: 20px;
+  font-size: var(--text-lg);
+  color: var(--color-text-secondary);
 }
 
 .notifications .badge {
   position: absolute;
   top: -4px;
   right: -4px;
-  background-color: var(--primary);
-  color: white;
-  font-size: 10px;
+  background-color: var(--color-brand);
+  color: var(--color-bg);
+  font-size: var(--text-xs);
   width: 16px;
   height: 16px;
   display: flex;
   justify-content: center;
   align-items: center;
   border-radius: 50%;
-  border: 2px solid white;
+  border: 2px solid var(--color-surface);
 }
 
 .user-info {
   display: flex;
   align-items: center;
-  border-left: 1px solid #eee;
-  padding-left: 24px;
+  border-left: 1px solid var(--color-border);
+  padding-left: var(--spacing-6);
 }
 
 .avatar {
   width: 40px;
   height: 40px;
-  background-color: var(--secondary);
-  color: white;
+  background-color: var(--color-brand);
+  color: var(--color-bg);
   display: flex;
   justify-content: center;
   align-items: center;
   border-radius: 50%;
-  font-weight: 700;
-  margin-right: 12px;
+  font-weight: var(--font-bold);
+  margin-right: var(--spacing-3);
 }
 
 .details {
@@ -91,12 +94,12 @@
 }
 
 .name {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--secondary);
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--color-text);
 }
 
 .role {
-  font-size: 12px;
-  color: var(--text-muted);
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
 }

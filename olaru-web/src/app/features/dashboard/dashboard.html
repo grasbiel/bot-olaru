@@ -5,37 +5,41 @@
     <app-header></app-header>
     
     <main class="content-body">
-      <header class="content-header">
-        <h1>Dashboard Analítico</h1>
-        <p>Acompanhe o desempenho de conversão e leads em tempo real.</p>
+      <header class="dashboard-header">
+        <div class="greeting">
+          <h1>{{ saudacao }}, {{ usuarioNome }}</h1>
+          <p>{{ dataHoje }}</p>
+        </div>
       </header>
 
       <div class="stats-grid">
         <div class="stat-card">
-          <span class="label">Total de Leads</span>
-          <div class="value">{{ indicadores.totalLeads }}</div>
-          <span class="trend positive">IA Qualificando</span>
+          <span class="label">Novos Leads Hoje</span>
+          <div class="value">{{ indicadores.novosLeadsHoje }}</div>
+          <span class="trend positive">↑ IA Qualificando</span>
         </div>
         <div class="stat-card">
-          <span class="label">Visitas Pendentes</span>
-          <div class="value">{{ indicadores.visitasPendentes }}</div>
-          <span class="trend">Aguardando Técnico</span>
+          <span class="label">Visitas do Dia</span>
+          <div class="value">{{ indicadores.visitasDoDia }}</div>
+          <span class="trend">Agendamentos confirmados</span>
         </div>
         <div class="stat-card">
-          <span class="label">Visitas Concluídas</span>
-          <div class="value">{{ indicadores.visitasConcluidas }}</div>
-          <span class="trend positive">Serviço Realizado</span>
+          <span class="label">Máquinas Disponíveis</span>
+          <div class="value">{{ indicadores.maquinasDisponiveis }}</div>
+          <span class="trend">Estoque pronto para locação</span>
         </div>
         <div class="stat-card">
-          <span class="label">Taxa de Conversão</span>
-          <div class="value">{{ indicadores.taxaConversao }}%</div>
-          <span class="trend">Leads → Visitas</span>
+          <span class="label">Handoffs Pendentes</span>
+          <div class="value">{{ indicadores.handoffsPendentes }}</div>
+          <span class="trend" [class.positive]="indicadores.handoffsPendentes === 0">
+            Aguardando humano
+          </span>
         </div>
       </div>
 
       <div class="charts-row">
         <div class="chart-container">
-          <h3>Evolução Semanal</h3>
+          <h3>Evolução de Conversão</h3>
           <div class="canvas-wrapper">
             <canvas #evolucaoChart></canvas>
           </div>

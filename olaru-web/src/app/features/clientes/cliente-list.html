@@ -7,8 +7,8 @@
     <main class="content-body">
       <header class="content-header">
         <div class="header-info">
-          <h1>Gerenciamento de Clientes</h1>
-          <p>Administre a base de clientes e seus dados de contato.</p>
+          <h1>Clientes e Leads</h1>
+          <p>Gestão da base de contatos e funil de qualificação.</p>
         </div>
         <button class="btn-primary" (click)="novoCadastro()" *ngIf="!exibirForm">
           + Novo Cliente
@@ -17,7 +17,7 @@
 
       <!-- Formulário de Cadastro/Edição -->
       <div class="card form-card" *ngIf="exibirForm">
-        <h3>{{ clienteSelecionado.id ? 'Editar Cliente' : 'Novo Cadastro' }}</h3>
+        <h3>{{ clienteSelecionado.id ? 'Editar Cadastro' : 'Novo Cadastro' }}</h3>
         <form (submit)="salvar()" class="grid-form">
           <div class="form-row">
             <div class="form-group flex-2">
@@ -31,24 +31,24 @@
           </div>
 
           <div class="form-row">
-            <div class="form-group">
+            <div class="form-group flex-1">
               <label>E-mail</label>
               <input type="email" [(ngModel)]="clienteSelecionado.email" name="email" required placeholder="email@exemplo.com">
             </div>
-            <div class="form-group">
+            <div class="form-group flex-1">
               <label>Telefone / WhatsApp</label>
               <input type="text" [(ngModel)]="clienteSelecionado.telefone" name="telefone" required placeholder="(00) 00000-0000">
             </div>
           </div>
 
           <div class="form-group">
-            <label>Endereço Completo</label>
+            <label>Endereço da Obra / Localização</label>
             <input type="text" [(ngModel)]="clienteSelecionado.endereco" name="endereco" placeholder="Rua, Número, Bairro, Cidade - UF">
           </div>
 
           <div class="form-actions">
             <button type="button" class="btn-outline" (click)="cancelar()">Cancelar</button>
-            <button type="submit" class="btn-primary">Salvar Cliente</button>
+            <button type="submit" class="btn-primary">Salvar Informações</button>
           </div>
         </form>
       </div>
@@ -58,8 +58,8 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>Cliente</th>
-              <th>Contato</th>
+              <th>Cliente / Localização</th>
+              <th>Informações de Contato</th>
               <th>Documento</th>
               <th>Status</th>
               <th>Ações</th>
@@ -70,7 +70,7 @@
               <td>
                 <div class="client-info">
                   <strong>{{ c.nome }}</strong>
-                  <span>{{ c.endereco }}</span>
+                  <span>📍 {{ c.endereco || 'Local não informado' }}</span>
                 </div>
               </td>
               <td>
@@ -79,10 +79,11 @@
                   <div>📱 {{ c.telefone }}</div>
                 </div>
               </td>
-              <td>{{ c.cpfCnpj }}</td>
+              <td style="font-family: var(--font-mono);">{{ c.cpfCnpj }}</td>
               <td>
-                <span class="status-dot" [ngClass]="c.ativo ? 'active' : 'inactive'"></span>
-                {{ c.ativo ? 'Ativo' : 'Inativo' }}
+                <span class="status-badge" [ngClass]="c.ativo ? 'status-active' : 'status-inactive'">
+                  {{ c.ativo ? 'Ativo' : 'Inativo' }}
+                </span>
               </td>
               <td class="actions">
                 <button class="btn-icon" (click)="editar(c)" title="Editar">✏️</button>
@@ -90,7 +91,10 @@
               </td>
             </tr>
             <tr *ngIf="clientes.length === 0">
-              <td colspan="5" class="empty-state">Nenhum cliente encontrado.</td>
+              <td colspan="5" class="empty-state">
+                <div style="font-size: 40px; margin-bottom: 10px;">👤</div>
+                Nenhum cliente cadastrado até o momento.
+              </td>
             </tr>
           </tbody>
         </table>

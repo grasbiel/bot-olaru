@@ -8,10 +8,10 @@
       <header class="content-header">
         <div class="header-info">
           <h1>Kanban de Visitas Técnicas</h1>
-          <p>Acompanhe e gerencie os agendamentos realizados pela IA.</p>
+          <p>Gestão e acompanhamento dos agendamentos em tempo real.</p>
         </div>
         <div class="header-filters">
-          <label for="date-filter">Data das Visitas:</label>
+          <label for="date-filter">Data:</label>
           <input type="date" id="date-filter" [(ngModel)]="dataFiltro" (change)="carregarVisitas()" class="date-input">
         </div>
       </header>
@@ -22,14 +22,19 @@
             <h3>{{ col.title }}</h3>
             <span class="count">{{ col.cards.length }}</span>
           </div>
+          
           <div class="kanban-cards">
-            <div class="kanban-card" *ngFor="let card of col.cards" [ngClass]="'border-' + card.status">
-              <div class="card-tag" [ngClass]="card.turno">{{ card.turno | uppercase }}</div>
+            <div class="kanban-card" 
+                 *ngFor="let card of col.cards" 
+                 [ngClass]="'status-' + card.status">
+              
+              <div class="card-tag" [ngClass]="card.turno">{{ card.turno }}</div>
+              
               <h4>{{ card.cliente.nome }}</h4>
-              <p>{{ card.descricaoServico }}</p>
+              <p>📍 {{ card.endereco || 'Endereço não informado' }}</p>
 
               <div class="card-assignment">
-                <label>Técnico:</label>
+                <label>Técnico Responsável:</label>
                 <select (change)="atribuirTecnico(card.id, $event)" [value]="card.tecnico?.id || ''">
                   <option value="">Não atribuído</option>
                   <option *ngFor="let t of tecnicos" [value]="t.id">{{ t.nome }}</option>
@@ -39,13 +44,28 @@
               <div class="card-footer">
                 <span class="date">📅 {{ card.dataVisita | date:'dd/MM' }}</span>
                 <div class="actions">
-                   <button *ngIf="card.status === 'pendente'" (click)="mudarStatus(card.id, 'confirmada')" title="Confirmar">✔️</button>
-                   <button *ngIf="card.status === 'confirmada'" (click)="mudarStatus(card.id, 'em_andamento')" title="Iniciar">🚀</button>
-                   <button *ngIf="card.status === 'em_andamento'" (click)="mudarStatus(card.id, 'concluida')" title="Concluir">✅</button>
+                   <!-- Pendente -> Confirmada / Cancelada -->
+                   <ng-container *ngIf="card.status === 'pendente'">
+                     <button (click)="mudarStatus(card.id, 'confirmada')" title="Confirmar">✔️</button>
+                     <button (click)="mudarStatus(card.id, 'cancelada')" title="Cancelar">❌</button>
+                   </ng-container>
+
+                   <!-- Confirmada -> Em Andamento / Cancelada -->
+                   <ng-container *ngIf="card.status === 'confirmada'">
+                     <button (click)="mudarStatus(card.id, 'em_andamento')" title="Iniciar">🚀</button>
+                     <button (click)="mudarStatus(card.id, 'cancelada')" title="Cancelar">❌</button>
+                   </ng-container>
+
+                   <!-- Em Andamento -> Concluída / Cancelada -->
+                   <ng-container *ngIf="card.status === 'em_andamento'">
+                     <button (click)="mudarStatus(card.id, 'concluida')" title="Concluir">✅</button>
+                     <button (click)="mudarStatus(card.id, 'cancelada')" title="Cancelar">❌</button>
+                   </ng-container>
                 </div>
               </div>
             </div>
-            <div *ngIf="col.cards.length === 0" class="empty-col">Sem visitas.</div>
+            
+            <div *ngIf="col.cards.length === 0" class="empty-col">Nenhuma visita nesta fase.</div>
           </div>
         </div>
       </div>

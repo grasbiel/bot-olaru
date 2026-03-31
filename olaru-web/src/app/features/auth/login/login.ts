@@ -17,20 +17,30 @@ export class LoginComponent {
 
   email = '';
   senha = '';
-  error = '';
+  loading = false;
+  errorMsg = '';
 
-  onLogin(event: Event) {
-    event.preventDefault();
-    this.error = '';
+  login() {
+    if (!this.email || !this.senha) return;
     
+    this.loading = true;
+    this.errorMsg = '';
+
     this.authService.login({ email: this.email.trim(), senha: this.senha }).subscribe({
-      next: () => {
-        console.log('Login efetuado com sucesso!');
-        this.router.navigate(['/dashboard']);
+      next: (res: any) => {
+        // Guardar usuário para saudação no dashboard
+        localStorage.setItem('user', JSON.stringify(res.usuario || { nome: 'Admin' }));
+        
+        const perfil = res.usuario?.perfil || 'admin';
+        if (perfil === 'tecnico') {
+          this.router.navigate(['/tecnico']);
+        } else {
+          this.router.navigate(['/dashboard']);
+        }
       },
-      error: (err) => {
-        console.error('Erro no login', err);
-        this.error = 'Credenciais inválidas. Tente novamente.';
+      error: () => {
+        this.errorMsg = 'E-mail ou senha incorretos. Tente novamente.';
+        this.loading = false;
       }
     });
   }

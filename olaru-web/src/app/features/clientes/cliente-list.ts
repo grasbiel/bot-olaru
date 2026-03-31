@@ -13,6 +13,7 @@ interface Cliente {
   cpfCnpj: string;
   endereco: string;
   ativo: boolean;
+  statusLead?: string;
 }
 
 @Component({
