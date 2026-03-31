@@ -6,11 +6,17 @@ import { HeaderComponent } from '../../../shared/components/header/header';
 import { VisitaService } from '../../../core/services/visita.service';
 import { UsuarioService } from '../../../core/services/usuario.service';
 import { Subscription } from 'rxjs';
+import { 
+  DragDropModule, 
+  CdkDragDrop, 
+  moveItemInArray, 
+  transferArrayItem 
+} from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'app-kanban',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, HeaderComponent],
+  imports: [CommonModule, FormsModule, SidebarComponent, HeaderComponent, DragDropModule],
   templateUrl: './kanban.html',
   styleUrl: './kanban.css'
 })
@@ -23,12 +29,16 @@ export class KanbanComponent implements OnInit, OnDestroy {
   tecnicos: any[] = [];
 
   colunas = [
-    { title: 'Pendente', status: 'pendente', cards: [] as any[] },
-    { title: 'Confirmada', status: 'confirmada', cards: [] as any[] },
-    { title: 'Em Andamento', status: 'em_andamento', cards: [] as any[] },
-    { title: 'Concluída', status: 'concluida', cards: [] as any[] },
-    { title: 'Cancelada', status: 'cancelada', cards: [] as any[] }
+    { id: 'pendente', title: 'Pendente', cards: [] as any[] },
+    { id: 'confirmada', title: 'Confirmada', cards: [] as any[] },
+    { id: 'em_andamento', title: 'Em Andamento', cards: [] as any[] },
+    { id: 'concluida', title: 'Concluída', cards: [] as any[] },
+    { id: 'cancelada', title: 'Cancelada', cards: [] as any[] }
   ];
+
+  get colunasIds() {
+    return this.colunas.map(c => c.id);
+  }
 
   ngOnInit() {
     this.carregarVisitas();
@@ -59,9 +69,40 @@ export class KanbanComponent implements OnInit, OnDestroy {
   carregarVisitas() {
     this.visitaService.listar(this.dataFiltro).subscribe(data => {
       this.colunas.forEach(col => {
-        col.cards = data.filter((v: any) => v.status === col.status);
+        col.cards = data.filter((v: any) => v.status === col.id);
       });
     });
+  }
+
+  drop(event: CdkDragDrop<any[]>) {
+    if (event.previousContainer === event.container) {
+      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+    } else {
+      const card = event.previousContainer.data[event.previousIndex];
+      const novoStatus = event.container.id;
+
+      // Validação básica de transições conforme §14.6.2
+      if (this.podeMudarStatus(card.status, novoStatus)) {
+        transferArrayItem(
+          event.previousContainer.data,
+          event.container.data,
+          event.previousIndex,
+          event.currentIndex,
+        );
+        this.mudarStatus(card.id, novoStatus);
+      }
+    }
+  }
+
+  podeMudarStatus(atual: string, novo: string): boolean {
+    const transicoes: Record<string, string[]> = {
+      'pendente': ['confirmada', 'cancelada'],
+      'confirmada': ['em_andamento', 'cancelada'],
+      'em_andamento': ['concluida', 'cancelada'],
+      'concluida': [],
+      'cancelada': []
+    };
+    return transicoes[atual]?.includes(novo) || false;
   }
 
   atribuirTecnico(visitaId: string, event: Event) {
@@ -74,8 +115,9 @@ export class KanbanComponent implements OnInit, OnDestroy {
   }
 
   mudarStatus(id: string, novoStatus: string) {
-    this.visitaService.atualizarStatus(id, novoStatus).subscribe(() => {
-      this.carregarVisitas();
+    this.visitaService.atualizarStatus(id, novoStatus).subscribe({
+      next: () => this.carregarVisitas(),
+      error: () => this.carregarVisitas() // Rollback
     });
   }
 }

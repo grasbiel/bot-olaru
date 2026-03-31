@@ -16,16 +16,23 @@
         </div>
       </header>
 
-      <div class="kanban-board">
+      <div class="kanban-board" cdkDropListGroup>
         <div class="kanban-column" *ngFor="let col of colunas">
           <div class="column-header">
             <h3>{{ col.title }}</h3>
             <span class="count">{{ col.cards.length }}</span>
           </div>
           
-          <div class="kanban-cards">
+          <div class="kanban-cards"
+               cdkDropList
+               [id]="col.id"
+               [cdkDropListData]="col.cards"
+               (cdkDropListDropped)="drop($event)">
+            
             <div class="kanban-card" 
                  *ngFor="let card of col.cards" 
+                 cdkDrag
+                 [cdkDragData]="card"
                  [ngClass]="'status-' + card.status">
               
               <div class="card-tag" [ngClass]="card.turno">{{ card.turno }}</div>
@@ -34,7 +41,7 @@
               <p>📍 {{ card.endereco || 'Endereço não informado' }}</p>
 
               <div class="card-assignment">
-                <label>Técnico Responsável:</label>
+                <label>Técnico:</label>
                 <select (change)="atribuirTecnico(card.id, $event)" [value]="card.tecnico?.id || ''">
                   <option value="">Não atribuído</option>
                   <option *ngFor="let t of tecnicos" [value]="t.id">{{ t.nome }}</option>
@@ -44,28 +51,23 @@
               <div class="card-footer">
                 <span class="date">📅 {{ card.dataVisita | date:'dd/MM' }}</span>
                 <div class="actions">
-                   <!-- Pendente -> Confirmada / Cancelada -->
                    <ng-container *ngIf="card.status === 'pendente'">
                      <button (click)="mudarStatus(card.id, 'confirmada')" title="Confirmar">✔️</button>
-                     <button (click)="mudarStatus(card.id, 'cancelada')" title="Cancelar">❌</button>
                    </ng-container>
-
-                   <!-- Confirmada -> Em Andamento / Cancelada -->
                    <ng-container *ngIf="card.status === 'confirmada'">
                      <button (click)="mudarStatus(card.id, 'em_andamento')" title="Iniciar">🚀</button>
-                     <button (click)="mudarStatus(card.id, 'cancelada')" title="Cancelar">❌</button>
                    </ng-container>
-
-                   <!-- Em Andamento -> Concluída / Cancelada -->
                    <ng-container *ngIf="card.status === 'em_andamento'">
                      <button (click)="mudarStatus(card.id, 'concluida')" title="Concluir">✅</button>
-                     <button (click)="mudarStatus(card.id, 'cancelada')" title="Cancelar">❌</button>
                    </ng-container>
                 </div>
               </div>
+
+              <!-- Placeholder visual durante o arraste -->
+              <div class="cdk-drag-placeholder" *cdkDragPlaceholder></div>
             </div>
             
-            <div *ngIf="col.cards.length === 0" class="empty-col">Nenhuma visita nesta fase.</div>
+            <div *ngIf="col.cards.length === 0" class="empty-col">Nenhuma visita.</div>
           </div>
         </div>
       </div>
