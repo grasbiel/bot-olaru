@@ -1,10 +1,8 @@
 import random
 import asyncio
 from agno.agent import Agent
-from agno.memory import Memory
 from agno.models.groq import Groq
 from agno.models.google import Gemini
-from agno.memory.db.postgres import PostgresMemoryDb
 from src.config import CHAVE_GROQ, GEMINI_API_KEY, LLM_PROVIDER, logger, DB_URL_AGNO
 from src.database import storage, r
 from src.services.chatwoot import enviar_mensagem_chatwoot, adicionar_etiqueta_chatwoot
@@ -36,8 +34,7 @@ def criar_agente():
     FASE 5: FECHAMENTO (Handoff para o comercial)
     """
 
-    # Memória de Longo Prazo para lembrar de fatos do usuário (ex: Nome, Preferências)
-    memory_db = PostgresMemoryDb(table_name="agent_memory", db_url=DB_URL_AGNO)
+    
 
     return Agent(
         model=obter_modelo(), 
@@ -52,7 +49,7 @@ def criar_agente():
         ],
         tools=[buscar_dados_cliente, verificar_estoque, consultar_disponibilidade_agenda, registrar_visita_tecnica, iniciar_handoff_humano],
         db=storage,
-        memory=Memory(db=memory_db, create_user_memories=True, update_user_memories_on_run=True),
+        update_memory_on_run=True,
         add_history_to_context=True,
         num_history_messages=12,
         markdown=False
