@@ -1,5 +1,6 @@
 import os
 import structlog
+import redis
 from dotenv import load_dotenv
 from groq import Groq as GroqClient
 
@@ -46,6 +47,13 @@ DB_PORT = os.getenv("DB_PORT", "5432")
 REDIS_HOST = os.getenv("REDIS_HOST", "db-redis")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 REDIS_PASS = os.getenv("REDIS_PASS")
+
+r = redis.Redis(
+    host=REDIS_HOST,
+    port=REDIS_PORT,
+    password=REDIS_PASS,
+    decode_responses=True
+)
 
 # URL SQLAlchemy (psycopg2 para scripts) e Agno (psycopg para o framework)
 DB_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
