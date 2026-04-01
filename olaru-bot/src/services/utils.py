@@ -3,7 +3,8 @@ import random
 import requests
 from datetime import datetime
 from typing import Optional
-from src.config import logger, r, CHAVE_GROQ
+from src.config import logger, CHAVE_GROQ
+from src.database import r
 from groq import Groq
 
 def verificar_limite_mensagens() -> bool:
