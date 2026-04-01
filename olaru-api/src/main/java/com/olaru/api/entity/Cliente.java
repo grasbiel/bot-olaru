@@ -29,6 +29,13 @@ public class Cliente {
 
     private String origem;
 
+    @Column(name = "status_lead", length = 30)
+    @Builder.Default
+    private String statusLead = "novo";
+
+    @Column(name = "resumo_conversa", columnDefinition = "TEXT")
+    private String resumoConversa;
+
     @CreationTimestamp
     @Column(name = "criado_em", updatable = false)
     private LocalDateTime criadoEm;

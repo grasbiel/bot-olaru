@@ -43,4 +43,17 @@ public class ClienteController {
                 })
                 .orElseGet(() -> repository.save(cliente));
     }
+
+    @PatchMapping("/telefone/{telefone}")
+    @Operation(summary = "Atualizar status ou resumo do cliente via telefone")
+    public ResponseEntity<Cliente> atualizar(@PathVariable String telefone, @RequestBody Cliente dados) {
+        return repository.findByTelefone(telefone)
+                .map(cliente -> {
+                    if (dados.getStatusLead() != null) cliente.setStatusLead(dados.getStatusLead());
+                    if (dados.getResumoConversa() != null) cliente.setResumoConversa(dados.getResumoConversa());
+                    if (dados.getNome() != null) cliente.setNome(dados.getNome());
+                    return ResponseEntity.ok(repository.save(cliente));
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
 }

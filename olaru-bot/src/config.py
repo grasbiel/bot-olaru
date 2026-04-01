@@ -2,59 +2,58 @@ import os
 import structlog
 import redis
 from dotenv import load_dotenv
-from groq import Groq as GroqClient
 
+# Carrega .env do diretório raiz do projeto ou olaru-bot
 load_dotenv()
 
-# Configuração de Logging Estruturado
+# Configuração de Logging Estruturado (Consistente para toda a aplicação)
 structlog.configure(
     processors=[
+        structlog.processors.TimeStamper(fmt="iso"),
         structlog.processors.JSONRenderer()
     ]
 )
 logger = structlog.get_logger()
 
-# Configurações do Chatwoot
+# --- Configurações do Chatwoot ---
 CHATWOOT_URL = os.getenv("CHATWOOT_URL")
 CHATWOOT_BOT_TOKEN = os.getenv("CHATWOOT_BOT_TOKEN")
 ID_DA_CONTA = os.getenv("ID_DA_CONTA")
 
-# Configurações da IA
-LLM_PROVIDER = os.getenv("LLM_PROVIDER", "groq") # Opções: "groq", "gemini"
+# --- Configurações da IA ---
+# Opções: "groq", "gemini"
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "groq").lower()
 CHAVE_GROQ = os.getenv("CHAVE_GROQ")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-# Inicialização do Groq (mantida para compatibilidade se necessário)
-groq_client = GroqClient(api_key=CHAVE_GROQ) if CHAVE_GROQ else None
-
-# Segurança Webhook
+# --- Segurança Webhook (Evolution API) ---
 WEBHOOK_SECRET = os.getenv("EVOLUTION_WEBHOOK_SECRET")
 
-# Configuração de Filtro de Teste
-NUMERO_TESTE = os.getenv("NUMERO_TESTE") 
+# --- Evolution API (Anti-Ban / Simulação de Presença) ---
+EVOLUTION_API_URL = os.getenv("EVOLUTION_API_URL")
+EVOLUTION_API_KEY = os.getenv("EVOLUTION_API_KEY")
+EVOLUTION_INSTANCE = os.getenv("EVOLUTION_INSTANCE")
 
-# URL da API Java (Spring Boot)
+# --- Filtro de Teste (Sandbox) ---
+NUMERO_TESTE = os.getenv("NUMERO_TESTE") 
+if NUMERO_TESTE:
+    # Normalização robusta do número de teste
+    NUMERO_TESTE = "".join(filter(str.isdigit, NUMERO_TESTE))
+
+# --- URL da API Java (Painel Administrativo) ---
 JAVA_API_URL = os.getenv("JAVA_API_URL", "http://api:8080/api/v1")
 
-# Banco de Dados
+# --- Banco de Dados PostgreSQL ---
 DB_HOST = os.getenv("DB_HOST", "db")
 DB_NAME = os.getenv("DB_NAME", "db_construtora")
 DB_USER = os.getenv("DB_USER", "postgres")
 DB_PASS = os.getenv("DB_PASS", "72d889c22343e475218d")
 DB_PORT = os.getenv("DB_PORT", "5432")
 
-# Redis
+# --- Redis (Dedup, Cache e Rate Limit) ---
 REDIS_HOST = os.getenv("REDIS_HOST", "db-redis")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 REDIS_PASS = os.getenv("REDIS_PASS")
 
-r = redis.Redis(
-    host=REDIS_HOST,
-    port=REDIS_PORT,
-    password=REDIS_PASS,
-    decode_responses=True
-)
-
-# URL SQLAlchemy (psycopg2 para scripts) e Agno (psycopg para o framework)
-DB_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+# URLs de conexão formatadas
 DB_URL_AGNO = f"postgresql+psycopg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"

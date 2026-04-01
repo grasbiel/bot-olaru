@@ -2,10 +2,10 @@ import redis
 from agno.db.postgres import PostgresDb
 from src.config import (
     REDIS_HOST, REDIS_PORT, REDIS_PASS, 
-    DB_USER, DB_PASS, DB_HOST, DB_PORT, DB_NAME
+    DB_URL_AGNO
 )
 
-# Conexão Redis
+# Conexão Global Redis
 r = redis.Redis(
     host=REDIS_HOST, 
     port=REDIS_PORT, 
@@ -13,11 +13,8 @@ r = redis.Redis(
     decode_responses=True
 )
 
-# URL SQLAlchemy utilizando psycopg (recomendado pela documentação Agno)
-DB_URL_AGNO = f"postgresql+psycopg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-
-# Armazenamento Persistente no Postgres (Agno)
-# Separamos as tabelas de Sessão (Histórico) e Memória (Fatos do usuário)
+# Armazenamento Persistente de Sessões (Agno)
+# Gerencia histórico de conversas no banco PostgreSQL
 storage = PostgresDb(
     session_table="agent_sessions",
     db_url=DB_URL_AGNO
