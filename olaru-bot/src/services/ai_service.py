@@ -7,6 +7,7 @@ from agno.models.groq import Groq
 from agno.models.google import Gemini
 from agno.knowledge.knowledge import Knowledge
 from agno.knowledge.reader.text_reader import TextReader
+from agno.knowledge.embedder.fastembed import FastEmbedEmbedder
 from agno.vectordb.pgvector import PgVector
 
 from src.config import (
@@ -27,6 +28,7 @@ knowledge_base = Knowledge(
     vector_db=PgVector(
         table_name="conhecimento_empresa",
         db_url=DB_URL_AGNO,
+        embedder=FastEmbedEmbedder(),
     ),
 )
 
