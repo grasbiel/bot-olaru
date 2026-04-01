@@ -80,7 +80,6 @@ def criar_agente() -> Agent:
         add_history_to_context=True,
         num_history_messages=12,  # Aumentado levemente para melhor contexto
         update_memory_on_run=True,
-        add_datetime_to_instructions=True,  # Ajuda a IA a saber que dia é hoje para agendamentos
         markdown=False
     )
 
