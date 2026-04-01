@@ -5,14 +5,10 @@ from typing import List, Optional
 from agno.agent import Agent
 from agno.models.groq import Groq
 from agno.models.google import Gemini
-from agno.knowledge.knowledge import Knowledge
-from agno.knowledge.reader.text_reader import TextReader
-from agno.knowledge.embedder.fastembed import FastEmbedEmbedder
-from agno.vectordb.pgvector import PgVector
 
 from src.config import (
     CHAVE_GROQ, GEMINI_API_KEY, LLM_PROVIDER, logger, 
-    DB_URL_AGNO, EVOLUTION_API_URL, EVOLUTION_API_KEY, EVOLUTION_INSTANCE
+    EVOLUTION_API_URL, EVOLUTION_API_KEY, EVOLUTION_INSTANCE
 )
 from src.database import storage, r
 from src.services.chatwoot import enviar_mensagem_chatwoot, adicionar_etiqueta_chatwoot, iniciar_handoff_humano
@@ -22,27 +18,6 @@ from src.tools.api_tools import (
     consultar_disponibilidade_agenda, registrar_visita_tecnica,
     acionar_handoff_humano, classificar_lead
 )
-
-# --- Configuração do Conhecimento (RAG) ---
-knowledge_base = Knowledge(
-    vector_db=PgVector(
-        table_name="conhecimento_empresa",
-        db_url=DB_URL_AGNO,
-        embedder=FastEmbedEmbedder(),
-    ),
-)
-
-def carregar_conhecimento():
-    """Tenta carregar o conhecimento RAG do diretório knowledge/"""
-    try:
-        # No Agno, usamos insert com skip_if_exists para carregar arquivos locais
-        knowledge_base.insert(path="knowledge/", reader=TextReader(), skip_if_exists=True)
-        logger.info("knowledge_base_loaded")
-    except Exception as e:
-        logger.warning("knowledge_base_load_error", error=str(e))
-
-# Executa carregamento ao iniciar
-carregar_conhecimento()
 
 def obter_modelo():
     """Retorna o modelo de IA baseado no provider configurado."""
@@ -75,7 +50,6 @@ def criar_agente() -> Agent:
     
     DIRETRIZ DE ABORDAGEM (LIDERANÇA DE MERCADO):
     - Se for o primeiro contato ou etiqueta 'lead_novo': Inicie com "Olá! Somos da Construtora OLARU. Estamos há 18 anos no mercado e somos líderes em reformas e construções de todos os tipos. Como podemos ajudar na sua obra hoje?"
-    - Use o conhecimento da 'knowledge_base' para detalhes técnicos da empresa.
     
     ESTRATÉGIA SDR (QUALIFICAÇÃO):
     - FASE 1: CONEXÃO (Acolhimento e institucional).
@@ -101,8 +75,6 @@ def criar_agente() -> Agent:
             consultar_disponibilidade_agenda, registrar_visita_tecnica,
             acionar_handoff_humano, classificar_lead
         ],
-        knowledge=knowledge_base,
-        search_knowledge=True,
         db=storage,
         update_memory_on_run=True,
         add_history_to_context=True,
