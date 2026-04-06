@@ -31,6 +31,16 @@ export class VisitaService {
     return this.http.patch(`${this.apiUrl}/${id}/status`, { status: novoStatus });
   }
 
+  registrarObservacao(id: string, conteudo: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${id}/observacoes`, { conteudo });
+  }
+
+  uploadFoto(id: string, arquivo: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('foto', arquivo);
+    return this.http.post(`${this.apiUrl}/${id}/fotos`, formData);
+  }
+
   verificarDisponibilidade(data: string, turno: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/disponibilidade`, { params: { data, turno } });
   }

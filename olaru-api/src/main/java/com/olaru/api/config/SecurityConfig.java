@@ -33,24 +33,36 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .cors(AbstractHttpConfigurer::disable) // Agora gerenciado pela CorsConfig
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/v1/auth/**").permitAll() // Broaden permitAll for all auth endpoints
+                .requestMatchers("/api/v1/auth/**").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/api-docs/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 
+                // Endpoints usados pelo Bot (Públicos por enquanto)
                 .requestMatchers(HttpMethod.GET, "/api/v1/clientes/telefone/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/clientes").permitAll()
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/clientes/telefone/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/visitas/disponibilidade").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/visitas").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/maquinas/estoque/**").permitAll()
 
+                // Endpoints Administrativos (RBAC §6.1)
+                .requestMatchers("/api/v1/dashboard/**").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers("/api/v1/clientes").hasAnyRole("ADMIN", "GERENTE")
                 .requestMatchers("/api/v1/maquinas/**").hasAnyRole("ADMIN", "GERENTE")
-                .requestMatchers(HttpMethod.PATCH, "/api/v1/visitas/**").hasAnyRole("ADMIN", "GERENTE", "TECNICO")
+                .requestMatchers("/api/v1/equipes/**").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers("/api/v1/usuarios/**").hasRole("ADMIN")
+                
+                // Visitas
                 .requestMatchers(HttpMethod.GET, "/api/v1/visitas").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers("/api/v1/visitas/minhas").hasRole("TECNICO")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/visitas/*/status").hasAnyRole("ADMIN", "GERENTE", "TECNICO")
+                .requestMatchers(HttpMethod.POST, "/api/v1/visitas/*/observacoes").hasRole("TECNICO")
+                .requestMatchers(HttpMethod.POST, "/api/v1/visitas/*/fotos").hasRole("TECNICO")
                 
                 .anyRequest().authenticated()
             )
@@ -67,29 +79,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(
-            "https://olaru.grasbiel.cloud", 
-            "http://olaru.grasbiel.cloud",
-            "http://localhost:4200"
-        ));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Origin", "Accept", "X-Requested-With"));
-        configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L); // Cache preflight for 1 hour
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
-
-    @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return org.springframework.security.crypto.password.NoOpPasswordEncoder.getInstance();
+        return new BCryptPasswordEncoder(12);
     }
 }

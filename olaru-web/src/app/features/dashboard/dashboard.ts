@@ -61,12 +61,12 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   carregarIndicadores() {
     this.dashboardService.obterIndicadores().subscribe({
       next: data => {
-        // Mapeia do backend (versão antiga) para os novos campos da UI
+        // Mapeia do backend para os novos campos da UI conforme DashboardController.java
         this.indicadores = {
-          novosLeadsHoje: data.totalLeads || 0,
-          visitasDoDia: data.visitasPendentes || 0,
-          maquinasDisponiveis: data.totalMaquinas || 0, // Ajuste se o backend retornar
-          handoffsPendentes: 0 // Mock por enquanto
+          novosLeadsHoje: data.leadsHoje || 0,
+          visitasDoDia: data.visitasHoje || 0,
+          maquinasDisponiveis: data.maquinasDisponiveis || 0,
+          handoffsPendentes: data.visitasPendentes || 0 // Usando visitasPendentes como indicador de carga
         };
       },
       error: err => console.error('Erro ao carregar indicadores:', err)

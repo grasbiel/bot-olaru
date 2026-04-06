@@ -1,43 +1,103 @@
-<div class="mobile-container">
-  <header class="mobile-header">
-    <span class="logo">OLARU</span>
-    <div class="tech-profile">
-      <span>👷 Técnico Logado</span>
-    </div>
-  </header>
-
-  <main class="mobile-content">
-    <div class="section-title">
-      <h2>Minhas Visitas de Hoje</h2>
-      <p>{{ hoje | date:'dd/MM/yyyy' }}</p>
-    </div>
-
-    <div class="visit-list">
-      <div class="visit-card" *ngFor="let v of visitas" [ngClass]="{'active': v.status === 'em_andamento'}">
-        <div class="visit-header">
-          <span class="time">{{ v.turno | uppercase }}</span>
-          <span class="badge" [ngClass]="v.status">{{ v.status | uppercase }}</span>
-        </div>
-        <h3>{{ v.cliente.nome }}</h3>
-        <p class="address">📍 {{ v.endereco }}</p>
-        <p class="desc">{{ v.descricaoServico }}</p>
-        
-        <div class="visit-actions">
-          <button *ngIf="v.status === 'confirmada'" (click)="mudarStatus(v.id, 'em_andamento')" class="btn-action primary">CHEGUEI NO LOCAL</button>
-          <button *ngIf="v.status === 'em_andamento'" (click)="mudarStatus(v.id, 'concluida')" class="btn-action success">FINALIZAR VISITA</button>
-          <button class="btn-action outline">VER ROTA (MAPS)</button>
-        </div>
+<div class="main-content">
+  <app-header></app-header>
+  
+  <main class="content-body">
+    <!-- Banner Offline -->
+    @if (!isOnline) {
+      <div class="offline-banner">
+        ⚠️ Você está offline. As ações serão sincronizadas ao reconectar.
       </div>
+    }
 
-      <div *ngIf="visitas.length === 0" class="text-center mt-3">
-        Nenhuma visita agendada para hoje.
+    <header class="page-header">
+      <h2>Minhas Visitas do Dia</h2>
+    </header>
+
+    @if (visitas.length === 0) {
+      <div class="empty-state">
+        <p>Você não tem visitas agendadas para hoje.</p>
       </div>
-    </div>
+    } @else {
+      <div class="visitas-list">
+        @for (visita of visitas; track visita.id) {
+          <div class="visita-card" [class.ativa]="visita.status === 'em_andamento'">
+            <div class="visita-info">
+              <span class="cliente-nome">{{ visita.cliente?.nome || 'Cliente sem nome' }}</span>
+              <span class="turno-badge">{{ visita.turno }}</span>
+              <p class="endereco">{{ visita.endereco }}</p>
+              <p class="descricao">{{ visita.descricaoServico }}</p>
+            </div>
+
+            <div class="visita-actions">
+              <button class="btn-outline" (click)="abrirMapa(visita.endereco)">
+                📍 Ver no Mapa
+              </button>
+
+              @if (visita.status === 'confirmada') {
+                <button class="btn-primary" (click)="chegueiNoLocal(visita)" [disabled]="!isOnline">
+                  📍 Cheguei no Local
+                </button>
+              }
+
+              @if (visita.status === 'em_andamento') {
+                <button class="btn-success" (click)="abrirFinalizacao(visita)" [disabled]="!isOnline">
+                  ✅ Finalizar Visita
+                </button>
+              }
+
+              @if (visita.status === 'concluida') {
+                <span class="status-concluida">✓ Visita Concluída</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
   </main>
-
-  <nav class="mobile-nav">
-    <button class="nav-item active">📅 Agenda</button>
-    <button class="nav-item">✅ Concluídas</button>
-    <button class="nav-item">👤 Perfil</button>
-  </nav>
 </div>
+
+<!-- Modal de Finalização -->
+@if (mostrarModal) {
+  <div class="modal-overlay" (click)="fecharModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>Finalizar Visita</h3>
+      <p class="modal-subtitle">{{ visitaAtiva?.cliente?.nome }}</p>
+
+      <div class="form-group">
+        <label>Observações do Serviço (Mínimo 10 caracteres)</label>
+        <textarea 
+          [(ngModel)]="observacoes" 
+          placeholder="Descreva o que foi feito ou diagnosticado..."
+          rows="4">
+        </textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Foto do Local/Serviço</label>
+        <div class="foto-upload">
+          @if (previewFoto) {
+            <div class="preview-container">
+              <img [src]="previewFoto" alt="Preview da foto">
+              <button class="btn-remove" (click)="fotoSelecionada = null; previewFoto = null">Remover</button>
+            </div>
+          } @else {
+            <label class="btn-foto">
+              📷 Tirar ou Escolher Foto
+              <input type="file" accept="image/*" capture="environment" (change)="onFotoSelecionada($event)">
+            </label>
+          }
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-outline" (click)="fecharModal()" [disabled]="enviando">Cancelar</button>
+        <button 
+          class="btn-primary" 
+          (click)="finalizarVisita()" 
+          [disabled]="observacoes.length < 10 || enviando || !isOnline">
+          {{ enviando ? 'Enviando...' : 'Confirmar Finalização' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
