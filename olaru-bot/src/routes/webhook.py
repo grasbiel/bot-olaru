@@ -37,16 +37,19 @@ async def receber_mensagem(request: Request, background_tasks: BackgroundTasks):
     nome_contato = dados.get("sender", {}).get("name", "Cliente").upper()
     telefone = dados.get("sender", {}).get("phone_number", "").replace("+", "")
     etiquetas = dados.get("conversation", {}).get("labels", [])
-    conteudo_texto = dados.get("content") or ""
+    conteudo_texto = (dados.get("content") or "").strip()
 
-    # 5. Validação Sandbox (Número de Teste)
-    if NUMERO_TESTE and telefone != NUMERO_TESTE:
-        logger.debug("sandbox_ignore", phone=telefone)
-        return {"status": "sandbox_active"}
-
-    # 6. Verificação de Gatilho e Gatilho "Mestre"
+    # 5. Verificação de Gatilho (Prioridade Máxima)
     msg_lower = conteudo_texto.lower()
     is_trigger = "anúncio" in msg_lower or "anuncio" in msg_lower
+    
+    logger.debug("webhook_received", phone=telefone, msg=conteudo_texto, trigger=is_trigger)
+
+    # 6. Validação Sandbox (Número de Teste)
+    # Se o número de teste estiver ativo, o robô só responde a outros números se for o GATILHO
+    if NUMERO_TESTE and telefone != NUMERO_TESTE and not is_trigger:
+        logger.debug("sandbox_ignore", phone=telefone)
+        return {"status": "sandbox_active"}
 
     # 7. Regras de Pausa e Bloqueio (Ignora se for gatilho "anúncio")
     if ("GROUP" in nome_contato or "pausar_robo" in etiquetas) and not is_trigger:
