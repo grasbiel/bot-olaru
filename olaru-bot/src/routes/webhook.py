@@ -44,11 +44,15 @@ async def receber_mensagem(request: Request, background_tasks: BackgroundTasks):
         logger.debug("sandbox_ignore", phone=telefone)
         return {"status": "sandbox_active"}
 
-    # 6. Regras de Pausa e Bloqueio
-    if "GROUP" in nome_contato or "pausar_robo" in etiquetas:
+    # 6. Verificação de Gatilho e Gatilho "Mestre"
+    msg_lower = conteudo_texto.lower()
+    is_trigger = "anúncio" in msg_lower or "anuncio" in msg_lower
+
+    # 7. Regras de Pausa e Bloqueio (Ignora se for gatilho "anúncio")
+    if ("GROUP" in nome_contato or "pausar_robo" in etiquetas) and not is_trigger:
         return {"status": "bot_paused_or_group"}
 
-    # 7. Processamento de Anexos (Áudio e Localização)
+    # 8. Processamento de Anexos (Áudio e Localização)
     attachments = dados.get("attachments", [])
     for anexo in attachments:
         tipo = anexo.get("file_type")
@@ -64,18 +68,13 @@ async def receber_mensagem(request: Request, background_tasks: BackgroundTasks):
     if not conteudo_texto:
         return {"status": "no_content"}
 
-    # 8. Verificação de Gatilho e Início de Atendimento
-    msg_lower = conteudo_texto.lower()
-    is_trigger = "anúncio" in msg_lower or "anuncio" in msg_lower
-    
-    if "robo_ativo" in etiquetas or is_trigger:
-        if "robo_ativo" not in etiquetas:
-            # Primeiro contato: Cadastra e marca como ativo
-            salvar_cliente_no_banco(nome_contato, telefone)
-            adicionar_etiqueta_chatwoot(id_conversa, ["robo_ativo", "lead_novo"])
-            logger.info("new_lead_activated", phone=telefone)
-
-        # Dispara IA em background
+    # 9. Verificação de Gatilho e Ativação sob demanda
+    if is_trigger:
+        # Se for o primeiro contato ou estiver inativo, salvamos o cliente
+        salvar_cliente_no_banco(nome_contato, telefone)
+        
+        # Dispara IA em background (Apenas se for o gatilho "anúncio")
         background_tasks.add_task(pensar_e_responder, conteudo_texto, id_conversa, telefone, etiquetas)
+        logger.info("robot_triggered_by_keyword", phone=telefone)
 
     return {"status": "processing"}
