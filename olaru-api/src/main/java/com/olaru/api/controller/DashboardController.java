@@ -1,6 +1,7 @@
 package com.olaru.api.controller;
 
 import com.olaru.api.repository.ClienteRepository;
+import com.olaru.api.repository.MaquinaRepository;
 import com.olaru.api.repository.VisitaTecnicaRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,23 +22,23 @@ public class DashboardController {
 
     private final ClienteRepository clienteRepository;
     private final VisitaTecnicaRepository visitaRepository;
+    private final MaquinaRepository maquinaRepository;
 
     @GetMapping("/indicadores")
     @Operation(summary = "Obter indicadores principais")
     public Map<String, Object> obterIndicadores() {
         Map<String, Object> stats = new HashMap<>();
+        LocalDate hoje = LocalDate.now();
         
-        long totalLeads = clienteRepository.count();
+        long leadsHoje = clienteRepository.countByDataCriacao(hoje);
+        long visitasHoje = visitaRepository.countByDataVisita(hoje);
+        Long maquinasDisponiveis = maquinaRepository.sumQuantidadeDisponivel();
         long visitasPendentes = visitaRepository.countByStatus("pendente");
-        long visitasConcluidas = visitaRepository.countByStatus("concluida");
         
-        stats.put("totalLeads", totalLeads);
+        stats.put("leadsHoje", leadsHoje);
+        stats.put("visitasHoje", visitasHoje);
+        stats.put("maquinasDisponiveis", maquinasDisponiveis != null ? maquinasDisponiveis : 0);
         stats.put("visitasPendentes", visitasPendentes);
-        stats.put("visitasConcluidas", visitasConcluidas);
-        
-        // Cálculo simples de conversão (Visitas Concluídas / Total Leads)
-        double conversao = totalLeads > 0 ? (double) visitasConcluidas / totalLeads * 100 : 0;
-        stats.put("taxaConversao", Math.round(conversao * 100.0) / 100.0);
 
         return stats;
     }
@@ -53,10 +54,11 @@ public class DashboardController {
         LocalDate hoje = LocalDate.now();
         for (int i = 6; i >= 0; i--) {
             LocalDate dataRef = hoje.minusDays(i);
-            labels[6-i] = dataRef.getDayOfMonth() + "/" + dataRef.getMonthValue();
-            // Aqui em produção usaríamos queries específicas por data, por hora mockamos com base no total
-            leads[6-i] = (long) (Math.random() * 10);
-            visitas[6-i] = (long) (Math.random() * 5);
+            int index = 6 - i;
+            
+            labels[index] = dataRef.getDayOfMonth() + "/" + dataRef.getMonthValue();
+            leads[index] = clienteRepository.countByDataCriacao(dataRef);
+            visitas[index] = visitaRepository.countByDataVisita(dataRef);
         }
 
         data.put("labels", labels);
