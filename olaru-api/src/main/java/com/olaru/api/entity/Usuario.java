@@ -2,10 +2,13 @@ package com.olaru.api.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -33,10 +36,19 @@ public class Usuario implements UserDetails {
     private String senha;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 30)
     private Perfil perfil;
 
+    @Builder.Default
     private Boolean ativo = true;
+
+    @CreationTimestamp
+    @Column(name = "criado_em", updatable = false)
+    private LocalDateTime criadoEm;
+
+    @UpdateTimestamp
+    @Column(name = "atualizado_em")
+    private LocalDateTime atualizadoEm;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

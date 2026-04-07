@@ -39,9 +39,10 @@ public class VisitaTecnica {
     private LocalDate dataVisita;
 
     @Column(nullable = false)
-    private String turno; // manha, tarde, integral
+    private String turno; // MANHA, TARDE
 
     @Column(nullable = false)
+    @Builder.Default
     private String status = "pendente"; // pendente, confirmada, em_andamento, concluida, cancelada
 
     @CreationTimestamp
