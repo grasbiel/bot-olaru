@@ -23,7 +23,7 @@ async def receber_mensagem(request: Request, background_tasks: BackgroundTasks):
 
     # --- LOG DE DEPURAÇÃO (remover em produção estável) ---
     logger.debug("raw_webhook_payload",
-                 event=dados.get("event"),
+                 webhook_event=dados.get("event"),
                  message_type=dados.get("message_type"),
                  content=(dados.get("content") or "")[:80],
                  phone=dados.get("sender", {}).get("phone_number"),
