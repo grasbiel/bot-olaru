@@ -212,3 +212,33 @@ def salvar_cliente_no_banco(nome: str, telefone: str) -> Optional[str]:
     except Exception as e:
         logger.error("api_error", tool="save_client", error=str(e))
         return None
+
+def atualizar_nome_cliente(telefone: str, novo_nome: str) -> str:
+    """
+    Use esta ferramenta IMEDIATAMENTE para atualizar o cadastro no banco de dados 
+    quando o cliente informar o nome dele.
+    """
+    logger.info("tool_call", tool="atualizar_nome_cliente", telefone=telefone, novo_nome=novo_nome)
+    
+    try:
+        # Limpa o telefone tirando o sinal de + para evitar erros na busca
+        telefone_limpo = telefone.replace('+', '')
+        
+        # Envia a atualização para a API Java
+        payload = {"nome": novo_nome}
+        url = f"{JAVA_API_URL}/clientes/telefone/{telefone_limpo}"
+        
+        # Usamos PATCH para atualizar apenas o nome, mantendo os outros dados
+        response = requests.patch(url, json=payload, timeout=10)
+        
+        if response.status_code == 200:
+            return f"Sucesso: Nome atualizado para '{novo_nome}' no sistema."
+            
+        return f"Aviso: Não foi possível atualizar o nome agora (Erro {response.status_code})."
+        
+    except Exception as e:
+        logger.error("tool_error", tool="atualizar_nome", error=str(e))
+        return "Erro técnico ao tentar salvar o nome do cliente. Avise que anotou o nome."
+    
+    
+    
