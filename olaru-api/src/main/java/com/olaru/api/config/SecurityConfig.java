@@ -33,7 +33,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(AbstractHttpConfigurer::disable) // Agora gerenciado pela CorsConfig
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/api-docs/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 
-                // Endpoints usados pelo Bot (Públicos por enquanto)
+                // Endpoints usados pelo Bot
                 .requestMatchers(HttpMethod.GET, "/api/v1/clientes/telefone/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/clientes").permitAll()
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/clientes/telefone/**").permitAll()
@@ -50,19 +50,19 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/visitas").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/maquinas/estoque/**").permitAll()
 
-                // Endpoints Administrativos (RBAC §6.1)
-                .requestMatchers("/api/v1/dashboard/**").hasAnyRole("ADMIN", "GERENTE")
-                .requestMatchers("/api/v1/clientes").hasAnyRole("ADMIN", "GERENTE")
-                .requestMatchers("/api/v1/maquinas/**").hasAnyRole("ADMIN", "GERENTE")
-                .requestMatchers("/api/v1/equipes/**").hasAnyRole("ADMIN", "GERENTE")
-                .requestMatchers("/api/v1/usuarios/**").hasRole("ADMIN")
+                // Endpoints Administrativos
+                .requestMatchers("/api/v1/dashboard/**").hasAnyRole("admin", "gerente")
+                .requestMatchers("/api/v1/clientes").hasAnyRole("admin", "gerente")
+                .requestMatchers("/api/v1/maquinas/**").hasAnyRole("admin", "gerente")
+                .requestMatchers("/api/v1/equipes/**").hasAnyRole("admin", "gerente")
+                .requestMatchers("/api/v1/usuarios/**").hasRole("admin")
                 
                 // Visitas
-                .requestMatchers(HttpMethod.GET, "/api/v1/visitas").hasAnyRole("ADMIN", "GERENTE")
-                .requestMatchers("/api/v1/visitas/minhas").hasRole("TECNICO")
-                .requestMatchers(HttpMethod.PATCH, "/api/v1/visitas/*/status").hasAnyRole("ADMIN", "GERENTE", "TECNICO")
-                .requestMatchers(HttpMethod.POST, "/api/v1/visitas/*/observacoes").hasRole("TECNICO")
-                .requestMatchers(HttpMethod.POST, "/api/v1/visitas/*/fotos").hasRole("TECNICO")
+                .requestMatchers(HttpMethod.GET, "/api/v1/visitas").hasAnyRole("admin", "gerente")
+                .requestMatchers("/api/v1/visitas/minhas").hasRole("tecnico")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/visitas/*/status").hasAnyRole("admin", "gerente", "tecnico")
+                .requestMatchers(HttpMethod.POST, "/api/v1/visitas/*/observacoes").hasRole("tecnico")
+                .requestMatchers(HttpMethod.POST, "/api/v1/visitas/*/fotos").hasRole("tecnico")
                 
                 .anyRequest().authenticated()
             )
@@ -76,6 +76,23 @@ public class SecurityConfig {
             );
         
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList(
+            "https://olaru.grasbiel.cloud", 
+            "http://olaru.grasbiel.cloud",
+            "http://localhost:4200"
+        ));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Origin", "Accept", "X-Requested-With"));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     @Bean
