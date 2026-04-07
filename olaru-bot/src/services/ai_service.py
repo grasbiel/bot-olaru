@@ -62,6 +62,8 @@ def criar_agente() -> Agent:
         "- NUNCA invente preços ou prazos que não venham das ferramentas.",
         "- Se o cliente demonstrar urgência ou irritação, use 'acionar_handoff_humano'.",
         "- Não passe para o cliente que você está fazendo consultas de funções internas como: classificação dele, salvando o número em base de dados, etc.",
+        "- Atenção: O atendimento é via Whatsapp, você já tem o telefone do cliente. Nunca peça o número dele",
+        "- Olhe os [DADOS DO CLIENTE]. Se o Nome for 'CLIENTE', pergunte educadamente como a pessoa se chama para personalizar o atendimento.",
 
         "PROCESSO DE PENSAMENTO (CoT):",
         "Antes de responder, analise as etiquetas e o histórico para saber em qual fase do SDR o cliente está.",
@@ -87,7 +89,7 @@ def criar_agente() -> Agent:
 # Singleton do Agente
 agente_olara = criar_agente()
 
-async def pensar_e_responder(mensagem_cliente: str, id_conversa: int, telefone: str, etiquetas: List[str] = None):
+async def pensar_e_responder(mensagem_cliente: str, id_conversa: int, telefone: str, nome_contato:str, etiquetas: List[str] = None):
     """Loop principal de processamento da resposta."""
     if not verificar_limite_mensagens():
         logger.warning("rate_limit_reached", phone=telefone)
@@ -99,7 +101,7 @@ async def pensar_e_responder(mensagem_cliente: str, id_conversa: int, telefone: 
 
         # 2. Prepara Contexto Adicional
         contexto_etiquetas = f"\nETIQUETAS: {', '.join(etiquetas) if etiquetas else 'nenhuma'}"
-        prompt_final = f"{mensagem_cliente}\n\n[CONTEXTO OPERACIONAL: ConversaID={id_conversa}, {contexto_etiquetas}]"
+        prompt_final = f"{mensagem_cliente}\n\n[DADOS DO CLIENTE: Nome={nome_contato}, Telefone={telefone}, ETIQUETAS: {', '.join(etiquetas) if etiquetas else 'nenhuma'}]"
 
         # 3. Executa a IA
         # Rodar em thread para não bloquear o loop async (agno sync por padrão)
