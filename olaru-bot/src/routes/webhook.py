@@ -119,6 +119,7 @@ async def receber_mensagem(request: Request, background_tasks: BackgroundTasks):
         pensar_e_responder,
         conteudo_texto,
         id_conversa,
+        nome_contato,
         telefone,
         etiquetas
     )
