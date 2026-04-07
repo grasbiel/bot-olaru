@@ -16,7 +16,7 @@ from src.services.utils import verificar_limite_mensagens, incrementar_contador_
 from src.tools.api_tools import (
     buscar_dados_cliente, verificar_estoque, 
     consultar_disponibilidade_agenda, registrar_visita_tecnica,
-    acionar_handoff_humano, classificar_lead
+    acionar_handoff_humano, classificar_lead, atualizar_nome_cliente
 )
 
 def obter_modelo():
@@ -76,7 +76,7 @@ def criar_agente() -> Agent:
         tools=[
             buscar_dados_cliente, verificar_estoque, 
             consultar_disponibilidade_agenda, registrar_visita_tecnica,
-            acionar_handoff_humano, classificar_lead
+            acionar_handoff_humano, classificar_lead, atualizar_nome_cliente
         ],
         db=storage,
         # Configurações de Memória e Contexto
