@@ -24,7 +24,7 @@ async def receber_mensagem(request: Request, background_tasks: BackgroundTasks):
     # --- LOG DE DEPURAÇÃO (remover em produção estável) ---
     logger.debug("raw_webhook_payload",
                  webhook_event=dados.get("event"),
-                 message_type=dados.get("message_type"),
+                 msg_type=dados.get("message_type"),
                  content=(dados.get("content") or "")[:80],
                  phone=dados.get("sender", {}).get("phone_number"),
                  labels=dados.get("conversation", {}).get("labels"))
@@ -65,15 +65,11 @@ async def receber_mensagem(request: Request, background_tasks: BackgroundTasks):
                  deve_processar=deve_processar)
 
     # 6. Validação Sandbox (Número de Teste)
-    # Se NUMERO_TESTE está ativo, só processa mensagens desse número OU gatilho "anúncio"
     if NUMERO_TESTE and telefone != NUMERO_TESTE and not is_trigger:
         logger.debug("sandbox_ignore", phone=telefone)
         return {"status": "sandbox_active"}
 
     # 7. Regras de Pausa e Bloqueio
-    # - Ignora mensagens de GRUPOS sempre
-    # - Ignora se "pausar_robo" está nas etiquetas (handoff humano ativo)
-    # - EXCEÇÃO: o gatilho "anúncio" SEMPRE bypassa a pausa (permite reativação)
     if "GROUP" in nome_contato and not is_trigger:
         return {"status": "group_ignored"}
 
@@ -101,27 +97,19 @@ async def receber_mensagem(request: Request, background_tasks: BackgroundTasks):
 
     # 9. Decisão de Processamento
     if not deve_processar:
-        # Mensagem de um contato sem ativação e sem gatilho → ignorar silenciosamente
         logger.debug("message_ignored_no_activation", phone=telefone, msg=conteudo_texto[:50])
         return {"status": "no_activation"}
 
     # 10. Ativação Inicial (Gatilho "anúncio")
     if is_trigger:
-        # Primeiro contato ou reativação: salvar cliente e ativar o robô
         salvar_cliente_no_banco(nome_contato, telefone)
 
-        # Adicionar etiqueta "robo_ativo" para que mensagens seguintes sejam processadas
-        # e "lead_novo" para marcar no funil de qualificação
         etiquetas_novas = ["robo_ativo"]
         if "lead_novo" not in etiquetas:
             etiquetas_novas.append("lead_novo")
 
-        # Se estava pausado, remover a pausa ao receber novo gatilho
         if "pausar_robo" in etiquetas:
             logger.info("robot_reactivated_by_keyword", phone=telefone)
-            # Nota: o Chatwoot não tem endpoint de remoção de etiqueta via POST,
-            # mas ao adicionar "robo_ativo" o webhook.py passa a processar novamente.
-            # Para remover "pausar_robo", seria necessário usar a API de labels com PUT.
 
         adicionar_etiqueta_chatwoot(id_conversa, etiquetas_novas)
         logger.info("robot_triggered_by_keyword", phone=telefone, conversation_id=id_conversa)
