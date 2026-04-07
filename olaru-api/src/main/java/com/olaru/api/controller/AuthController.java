@@ -28,14 +28,19 @@ public class AuthController {
 
     @PostMapping("/login")
     @Operation(summary = "Realizar login e obter token JWT")
-    public ResponseEntity<TokenDto> login(@RequestBody @Valid LoginDto loginDto) {
-        String email = loginDto.getEmail().replaceAll("\\s+", "").toLowerCase();
-        UsernamePasswordAuthenticationToken authenticationToken = 
-                new UsernamePasswordAuthenticationToken(email, loginDto.getSenha());
-        
-        Authentication authentication = manager.authenticate(authenticationToken);
-        String tokenJWT = tokenService.gerarToken((Usuario) authentication.getPrincipal());
-        
-        return ResponseEntity.ok(new TokenDto(tokenJWT, "Bearer"));
+    public ResponseEntity<?> login(@RequestBody @Valid LoginDto loginDto) {
+        try {
+            String email = loginDto.getEmail().trim().toLowerCase();
+            UsernamePasswordAuthenticationToken authenticationToken = 
+                    new UsernamePasswordAuthenticationToken(email, loginDto.getSenha());
+            
+            Authentication authentication = manager.authenticate(authenticationToken);
+            String tokenJWT = tokenService.gerarToken((Usuario) authentication.getPrincipal());
+            
+            return ResponseEntity.ok(new TokenDto(tokenJWT, "Bearer"));
+        } catch (Exception e) {
+            System.err.println("FALHA NA AUTENTICAÇÃO: " + e.getMessage());
+            return ResponseEntity.status(401).body("Credenciais inválidas ou erro interno");
+        }
     }
 }
