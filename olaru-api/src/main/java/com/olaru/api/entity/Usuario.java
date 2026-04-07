@@ -35,7 +35,6 @@ public class Usuario implements UserDetails {
     @Column(name = "senha_hash", nullable = false)
     private String senha;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private Perfil perfil;
 
