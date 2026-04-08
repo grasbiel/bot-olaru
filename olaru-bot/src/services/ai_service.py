@@ -3,6 +3,7 @@ import asyncio
 import requests
 from typing import List, Optional
 from agno.agent import Agent
+from agno.memory.manager import MemoryManager
 from agno.models.groq import Groq
 from agno.models.google import Gemini
 
@@ -10,7 +11,7 @@ from src.config import (
     CHAVE_GROQ, GEMINI_API_KEY, LLM_PROVIDER, logger,
     EVOLUTION_API_URL, EVOLUTION_API_KEY, EVOLUTION_INSTANCE, JAVA_API_URL
 )
-from src.database import storage, memory_db, r
+from src.database import storage, r
 from src.services.chatwoot import enviar_mensagem_chatwoot, adicionar_etiqueta_chatwoot, iniciar_handoff_humano
 from src.services.utils import verificar_limite_mensagens, incrementar_contador_mensagens
 from src.tools.api_tools import (
@@ -148,8 +149,8 @@ def criar_agente() -> Agent:
             classificar_lead,
             atualizar_nome_cliente,
         ],
-        storage=storage,       # Histórico de sessão por conversa (agent_sessions)
-        memory=memory_db,      # Fatos de longo prazo por cliente (agent_memory)
+        db=storage,                                    # Histórico de sessão por conversa (agent_sessions)
+        memory_manager=MemoryManager(db=storage),      # Fatos de longo prazo por cliente (agent_memory)
         add_history_to_context=True,
         num_history_messages=12,
         update_memory_on_run=True,
