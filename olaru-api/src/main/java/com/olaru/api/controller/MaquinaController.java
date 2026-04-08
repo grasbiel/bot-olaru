@@ -20,9 +20,9 @@ public class MaquinaController {
     private final MaquinaRepository repository;
 
     @GetMapping
-    @Operation(summary = "Listar todas as máquinas")
+    @Operation(summary = "Listar máquinas ativas")
     public List<Maquina> listar() {
-        return repository.findAll();
+        return repository.findByAtivoTrue();
     }
 
     @GetMapping("/{id}")
@@ -36,7 +36,7 @@ public class MaquinaController {
     @GetMapping("/estoque/{nome}")
     @Operation(summary = "Consultar estoque por nome")
     public ResponseEntity<Maquina> consultarEstoque(@PathVariable String nome) {
-        return repository.findByNomeContainingIgnoreCase(nome)
+        return repository.findByNomeContainingIgnoreCaseAndAtivoTrue(nome)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -64,12 +64,14 @@ public class MaquinaController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Excluir máquina")
-    public ResponseEntity<Void> excluir(@PathVariable UUID id) {
-        if (repository.existsById(id)) {
-            repository.deleteById(id);
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+    @Operation(summary = "Desativar máquina (soft delete)")
+    public ResponseEntity<Void> desativar(@PathVariable UUID id) {
+        return repository.findById(id)
+                .map(m -> {
+                    m.setAtivo(false);
+                    repository.save(m);
+                    return ResponseEntity.noContent().<Void>build();
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 }
