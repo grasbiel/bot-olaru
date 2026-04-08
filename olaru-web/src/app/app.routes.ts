@@ -6,6 +6,7 @@ import { MinhasVisitasComponent } from './features/operacional/minhas-visitas/mi
 import { MaquinaListComponent } from './features/maquinas/maquina-list';
 import { ClienteListComponent } from './features/clientes/cliente-list';
 import { ConfiguracoesComponent } from './features/config/configuracoes';
+import { EquipeListComponent } from './features/equipes/equipe-list';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -13,6 +14,7 @@ export const routes: Routes = [
   { path: 'visitas', component: KanbanComponent },
   { path: 'maquinas', component: MaquinaListComponent },
   { path: 'clientes', component: ClienteListComponent },
+  { path: 'equipes', component: EquipeListComponent },
   { path: 'config', component: ConfiguracoesComponent },
   { path: 'tecnico', component: MinhasVisitasComponent },
   { path: '', redirectTo: 'login', pathMatch: 'full' }

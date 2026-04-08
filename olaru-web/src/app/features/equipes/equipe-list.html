@@ -1,0 +1,80 @@
+<div class="dashboard-layout">
+  <app-sidebar></app-sidebar>
+
+  <div class="main-content">
+    <app-header></app-header>
+
+    <main class="content-body">
+      <header class="content-header">
+        <div class="header-info">
+          <h1>Equipes de Campo</h1>
+          <p>Gerenciamento das equipes técnicas responsáveis pelas visitas.</p>
+        </div>
+        <button class="btn-primary" (click)="novoCadastro()" *ngIf="!exibirForm">
+          + Nova Equipe
+        </button>
+      </header>
+
+      <!-- Formulário de Cadastro/Edição -->
+      <div class="card form-card" *ngIf="exibirForm">
+        <h3>{{ equipeSelecionada.id ? 'Editar Equipe' : 'Nova Equipe' }}</h3>
+        <form (submit)="salvar()" class="grid-form">
+          <div class="form-group">
+            <label>Nome da Equipe</label>
+            <input type="text" [(ngModel)]="equipeSelecionada.nome" name="nome" required placeholder="Ex: Equipe Alpha">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>WhatsApp da Equipe</label>
+              <input type="text" [(ngModel)]="equipeSelecionada.telefoneWhatsapp" name="telefone" placeholder="5511999999999">
+            </div>
+            <div class="form-group">
+              <label>Especialidade</label>
+              <input type="text" [(ngModel)]="equipeSelecionada.especialidade" name="especialidade" placeholder="Ex: Instalação elétrica, Alvenaria">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-outline" (click)="cancelar()">Cancelar</button>
+            <button type="submit" class="btn-primary">Salvar Equipe</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Tabela de Listagem -->
+      <div class="card table-card" *ngIf="!exibirForm">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Equipe</th>
+              <th>Especialidade</th>
+              <th>WhatsApp</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let e of equipes">
+              <td><strong>{{ e.nome }}</strong></td>
+              <td>{{ e.especialidade || '—' }}</td>
+              <td>{{ e.telefoneWhatsapp || '—' }}</td>
+              <td>
+                <span class="status-dot" [ngClass]="e.ativo ? 'active' : 'inactive'"></span>
+                {{ e.ativo ? 'Ativa' : 'Inativa' }}
+              </td>
+              <td class="actions">
+                <button class="btn-icon" (click)="editar(e)" title="Editar">✏️</button>
+                <button class="btn-icon danger" (click)="desativar(e.id)" title="Desativar">🗑️</button>
+              </td>
+            </tr>
+            <tr *ngIf="equipes.length === 0">
+              <td colspan="5" class="empty-state">
+                <div style="font-size: 40px; margin-bottom: 10px;">👷</div>
+                Nenhuma equipe cadastrada.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
