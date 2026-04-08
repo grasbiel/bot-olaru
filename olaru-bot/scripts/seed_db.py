@@ -1,4 +1,5 @@
 import os
+import bcrypt
 import psycopg2
 from dotenv import load_dotenv
 
@@ -12,8 +13,8 @@ DB_USER = os.getenv("DB_USER", "postgres")
 DB_PASS = os.getenv("DB_PASS", "72d889c22343e475218d")
 DB_PORT = os.getenv("DB_PORT", "5432")
 
-# Senha em Texto Puro para facilitar testes
-BCRYPT_PASS = "123456" # Senha real: '123456'
+# Hash BCrypt gerado em runtime para a senha '123456'
+BCRYPT_PASS = bcrypt.hashpw("123456".encode(), bcrypt.gensalt(10)).decode()
 
 SQL_SEED = [
     # 1. Garantir que a tabela de usuários existe (caso o Spring Boot ainda não tenha rodado)

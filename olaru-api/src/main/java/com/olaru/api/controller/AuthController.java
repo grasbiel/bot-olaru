@@ -35,9 +35,15 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(email, loginDto.getSenha());
             
             Authentication authentication = manager.authenticate(authenticationToken);
-            String tokenJWT = tokenService.gerarToken((Usuario) authentication.getPrincipal());
-            
-            return ResponseEntity.ok(new TokenDto(tokenJWT, "Bearer"));
+            Usuario usuario = (Usuario) authentication.getPrincipal();
+            String tokenJWT = tokenService.gerarToken(usuario);
+
+            TokenDto.UsuarioResumoDto usuarioResumo = new TokenDto.UsuarioResumoDto(
+                    usuario.getNome(),
+                    usuario.getEmail(),
+                    usuario.getPerfil().name().toLowerCase()
+            );
+            return ResponseEntity.ok(new TokenDto(tokenJWT, "Bearer", usuarioResumo));
         } catch (Exception e) {
             System.err.println("FALHA NA AUTENTICAÇÃO: " + e.getMessage());
             return ResponseEntity.status(401).body("Credenciais inválidas ou erro interno");
