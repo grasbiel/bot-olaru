@@ -1,5 +1,5 @@
 import os
-import random
+import tempfile
 import requests
 from datetime import datetime
 from typing import Optional
@@ -48,23 +48,24 @@ def transcrever_audio(url_audio: str) -> Optional[str]:
         return None
         
     client = Groq(api_key=CHAVE_GROQ)
-    temp_file = f"temp_{random.randint(10000, 99999)}.ogg"
-    
+    fd, temp_file = tempfile.mkstemp(suffix=".ogg")
+    os.close(fd)
+
     try:
         # Download do áudio
         response = requests.get(url_audio, timeout=20)
-        with open(temp_file, "wb") as f: 
+        with open(temp_file, "wb") as f:
             f.write(response.content)
-        
+
         # Transcrição via Groq (Whisper)
         with open(temp_file, "rb") as audio_file:
             transcription = client.audio.transcriptions.create(
-                file=(temp_file, audio_file.read()),
+                file=(os.path.basename(temp_file), audio_file.read()),
                 model="whisper-large-v3-turbo",
                 response_format="text",
                 language="pt"
             )
-        
+
         return transcription
     except Exception as e:
         logger.error("transcription_error", error=str(e))

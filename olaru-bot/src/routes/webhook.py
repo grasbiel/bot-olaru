@@ -29,12 +29,11 @@ async def receber_mensagem(request: Request, background_tasks: BackgroundTasks):
                  phone=dados.get("sender", {}).get("phone_number"),
                  labels=dados.get("conversation", {}).get("labels"))
 
-    # 2. Deduplicação de Mensagens (Redis)
+    # 2. Deduplicação de Mensagens (Redis - operação atômica com SET NX)
     msg_id = dados.get("id")
     if msg_id:
-        if r.exists(f"msg_proc:{msg_id}"):
+        if not r.set(f"msg_proc:{msg_id}", "1", ex=600, nx=True):
             return {"status": "duplicate"}
-        r.setex(f"msg_proc:{msg_id}", 600, "1")
 
     # 3. Filtro de Evento (Apenas mensagens recebidas)
     if dados.get("event") != "message_created" or dados.get("message_type") != "incoming":
@@ -65,12 +64,15 @@ async def receber_mensagem(request: Request, background_tasks: BackgroundTasks):
                  deve_processar=deve_processar)
 
     # 6. Validação Sandbox (Número de Teste)
-    if NUMERO_TESTE and telefone != NUMERO_TESTE and not is_trigger:
+    # Em modo sandbox, apenas o número de teste é processado, sem exceções
+    if NUMERO_TESTE and telefone != NUMERO_TESTE:
         logger.debug("sandbox_ignore", phone=telefone)
         return {"status": "sandbox_active"}
 
     # 7. Regras de Pausa e Bloqueio
-    if "GROUP" in nome_contato and not is_trigger:
+    # Ignora mensagens de grupos (Chatwoot indica canal "Channel::Api" ou conversa de grupo)
+    tipo_canal = dados.get("channel", "")
+    if "group" in tipo_canal.lower() or dados.get("conversation", {}).get("meta", {}).get("channel") == "Channel::Group":
         return {"status": "group_ignored"}
 
     if "pausar_robo" in etiquetas and not is_trigger:
@@ -119,8 +121,8 @@ async def receber_mensagem(request: Request, background_tasks: BackgroundTasks):
         pensar_e_responder,
         conteudo_texto,
         id_conversa,
-        nome_contato,
         telefone,
+        nome_contato,
         etiquetas
     )
 

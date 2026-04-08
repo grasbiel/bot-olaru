@@ -10,7 +10,7 @@ from src.config import (
     CHAVE_GROQ, GEMINI_API_KEY, LLM_PROVIDER, logger, 
     EVOLUTION_API_URL, EVOLUTION_API_KEY, EVOLUTION_INSTANCE
 )
-from src.database import storage, r
+from src.database import storage, memory_db, r
 from src.services.chatwoot import enviar_mensagem_chatwoot, adicionar_etiqueta_chatwoot, iniciar_handoff_humano
 from src.services.utils import verificar_limite_mensagens, incrementar_contador_mensagens
 from src.tools.api_tools import (
@@ -75,14 +75,15 @@ def criar_agente() -> Agent:
         description="SDR Specialist - Construtora OLARU",
         instructions=instrucoes,
         tools=[
-            buscar_dados_cliente, verificar_estoque, 
+            buscar_dados_cliente, verificar_estoque,
             consultar_disponibilidade_agenda, registrar_visita_tecnica,
             acionar_handoff_humano, classificar_lead, atualizar_nome_cliente
         ],
-        db=storage,
+        storage=storage,        # Sessões/histórico por conversa (agent_sessions)
+        memory=memory_db,       # Fatos de longo prazo por cliente (agent_memory)
         # Configurações de Memória e Contexto
         add_history_to_context=True,
-        num_history_messages=12,  # Aumentado levemente para melhor contexto
+        num_history_messages=12,
         update_memory_on_run=True,
         markdown=False
     )
@@ -106,9 +107,9 @@ async def pensar_e_responder(mensagem_cliente: str, id_conversa: int, telefone: 
 
         # 3. Executa a IA
         # Rodar em thread para não bloquear o loop async (agno sync por padrão)
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         resposta = await loop.run_in_executor(
-            None, 
+            None,
             lambda: agente_olara.run(prompt_final, session_id=f"conv_{id_conversa}", user_id=telefone)
         )
         conteudo = resposta.content
