@@ -1,5 +1,6 @@
 package com.olaru.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -32,11 +33,16 @@ public class Usuario implements UserDetails {
     @Column(unique = true, nullable = false)
     private String email;
 
+    @JsonIgnore
     @Column(name = "senha_hash", nullable = false)
     private String senha;
 
     @Column(nullable = false, length = 30)
     private Perfil perfil;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "equipe_id")
+    private Equipe equipe;
 
     @Builder.Default
     private Boolean ativo = true;

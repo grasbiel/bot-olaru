@@ -53,6 +53,24 @@ def adicionar_etiqueta_chatwoot(id_conversa: int, etiquetas: List[str]) -> bool:
         logger.error("chatwoot_label_error", conversation_id=id_conversa, error=str(e))
         return False
 
+def substituir_etiqueta_lead_chatwoot(id_conversa: int, novo_status: str) -> bool:
+    """Substitui qualquer etiqueta lead_* pela nova, preservando todas as demais.
+
+    Garante que o cliente nunca acumule etiquetas conflitantes como
+    lead_novo + lead_quente + lead_qualificado ao mesmo tempo.
+    """
+    etiquetas_atuais = obter_etiquetas_chatwoot(id_conversa)
+    etiquetas_finais = [e for e in etiquetas_atuais if not e.startswith("lead_")] + [f"lead_{novo_status}"]
+
+    url = f"{CHATWOOT_URL}/api/v1/accounts/{ID_DA_CONTA}/conversations/{id_conversa}/labels"
+    headers = {"api_access_token": CHATWOOT_BOT_TOKEN}
+    try:
+        response = requests.post(url, json={"labels": etiquetas_finais}, headers=headers, timeout=10)
+        return response.status_code in [200, 201]
+    except Exception as e:
+        logger.error("chatwoot_label_error", conversation_id=id_conversa, error=str(e))
+        return False
+
 def iniciar_handoff_humano(id_conversa: int, motivo: str = "solicitado_pelo_cliente") -> None:
     """Pausa o robô e sinaliza para atendentes humanos assumirem."""
     logger.info("handoff_initiated", conversation_id=id_conversa, reason=motivo)

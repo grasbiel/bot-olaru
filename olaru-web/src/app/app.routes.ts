@@ -7,6 +7,7 @@ import { MaquinaListComponent } from './features/maquinas/maquina-list';
 import { ClienteListComponent } from './features/clientes/cliente-list';
 import { ConfiguracoesComponent } from './features/config/configuracoes';
 import { EquipeListComponent } from './features/equipes/equipe-list';
+import { UsuarioListComponent } from './features/usuarios/usuario-list';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -15,6 +16,7 @@ export const routes: Routes = [
   { path: 'maquinas', component: MaquinaListComponent },
   { path: 'clientes', component: ClienteListComponent },
   { path: 'equipes', component: EquipeListComponent },
+  { path: 'usuarios', component: UsuarioListComponent },
   { path: 'config', component: ConfiguracoesComponent },
   { path: 'tecnico', component: MinhasVisitasComponent },
   { path: '', redirectTo: 'login', pathMatch: 'full' }

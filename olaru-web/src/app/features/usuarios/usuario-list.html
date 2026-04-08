@@ -1,0 +1,130 @@
+<div class="dashboard-layout">
+  <app-sidebar></app-sidebar>
+
+  <div class="main-content">
+    <app-header></app-header>
+
+    <main class="content-body">
+      <header class="content-header">
+        <div class="header-info">
+          <h1>Usuários do Sistema</h1>
+          <p>Gestão de acessos e permissões do painel administrativo.</p>
+        </div>
+        <button class="btn-primary" (click)="novoCadastro()" *ngIf="!exibirForm">
+          + Novo Usuário
+        </button>
+      </header>
+
+      <!-- Formulário de Cadastro/Edição -->
+      <div class="card form-card" *ngIf="exibirForm">
+        <h3>{{ usuarioSelecionado.id ? 'Editar Usuário' : 'Novo Usuário' }}</h3>
+
+        <div class="alert-error" *ngIf="erroForm">{{ erroForm }}</div>
+
+        <form (submit)="salvar()" class="grid-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nome completo</label>
+              <input type="text" [(ngModel)]="usuarioSelecionado.nome" name="nome" required placeholder="Ex: João da Silva">
+            </div>
+            <div class="form-group">
+              <label>E-mail</label>
+              <input type="email" [(ngModel)]="usuarioSelecionado.email" name="email" required placeholder="joao@empresa.com">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Perfil de Acesso</label>
+              <select [(ngModel)]="usuarioSelecionado.perfil" name="perfil" required>
+                <option value="admin">Administrador</option>
+                <option value="gerente">Gerente</option>
+                <option value="tecnico">Técnico</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Equipe (opcional)</label>
+              <select [(ngModel)]="usuarioSelecionado.equipeId" name="equipeId">
+                <option [ngValue]="undefined">— Sem equipe —</option>
+                <option *ngFor="let eq of equipes" [value]="eq.id">{{ eq.nome }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group" *ngIf="!usuarioSelecionado.id">
+            <label>Senha inicial</label>
+            <input type="password" [(ngModel)]="usuarioSelecionado.senha" name="senha" placeholder="Mínimo 6 caracteres">
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-outline" (click)="cancelar()">Cancelar</button>
+            <button type="submit" class="btn-primary">
+              {{ usuarioSelecionado.id ? 'Salvar Alterações' : 'Criar Usuário' }}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Tabela de Listagem -->
+      <div class="card table-card" *ngIf="!exibirForm">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>E-mail</th>
+              <th>Perfil</th>
+              <th>Equipe</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let u of usuarios">
+              <td><strong>{{ u.nome }}</strong></td>
+              <td>{{ u.email }}</td>
+              <td>
+                <span class="perfil-badge" [ngClass]="perfilClass(u.perfil)">
+                  {{ perfilLabel(u.perfil) }}
+                </span>
+              </td>
+              <td>{{ u.equipe?.nome || '—' }}</td>
+              <td>
+                <span class="status-dot" [ngClass]="u.ativo ? 'active' : 'inactive'"></span>
+                {{ u.ativo ? 'Ativo' : 'Inativo' }}
+              </td>
+              <td class="actions">
+                <button class="btn-icon" (click)="editar(u)" title="Editar">✏️</button>
+                <button class="btn-icon" (click)="abrirModalSenha(u)" title="Redefinir senha">🔑</button>
+                <button class="btn-icon danger" (click)="desativar(u.id)" title="Desativar">🗑️</button>
+              </td>
+            </tr>
+            <tr *ngIf="usuarios.length === 0">
+              <td colspan="6" class="empty-state">
+                <div style="font-size: 40px; margin-bottom: 10px;">👤</div>
+                Nenhum usuário cadastrado.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal: Redefinir Senha -->
+<div class="modal-overlay" *ngIf="exibirModalSenha" (click)="cancelarSenha()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <h3>Redefinir Senha</h3>
+    <p class="modal-subtitle">Usuário: <strong>{{ usuarioSelecionado.nome }}</strong></p>
+    <div class="form-group">
+      <label>Nova Senha</label>
+      <input type="password" [(ngModel)]="novaSenha" placeholder="Mínimo 6 caracteres">
+    </div>
+    <div class="form-actions">
+      <button class="btn-outline" (click)="cancelarSenha()">Cancelar</button>
+      <button class="btn-primary" (click)="salvarSenha()" [disabled]="novaSenha.length < 6">
+        Salvar Senha
+      </button>
+    </div>
+  </div>
+</div>

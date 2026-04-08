@@ -56,12 +56,17 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/equipes/**").hasAnyRole("admin", "gerente")
                 .requestMatchers("/api/v1/usuarios/**").hasRole("admin")
                 
-                // Visitas
+                // Visitas — rotas específicas primeiro (mais específico antes do genérico)
                 .requestMatchers(HttpMethod.GET, "/api/v1/visitas").hasAnyRole("admin", "gerente")
-                .requestMatchers("/api/v1/visitas/minhas").hasRole("tecnico")
-                .requestMatchers(HttpMethod.PATCH, "/api/v1/visitas/*/status").hasAnyRole("admin", "gerente", "tecnico")
+                .requestMatchers(HttpMethod.GET, "/api/v1/visitas/minhas").hasRole("tecnico")
+                .requestMatchers(HttpMethod.GET, "/api/v1/visitas/*/fotos").hasAnyRole("admin", "gerente", "tecnico")
+                .requestMatchers(HttpMethod.GET, "/api/v1/visitas/*/observacoes").hasAnyRole("admin", "gerente", "tecnico")
+                .requestMatchers(HttpMethod.GET, "/api/v1/visitas/*").hasAnyRole("admin", "gerente", "tecnico")
                 .requestMatchers(HttpMethod.POST, "/api/v1/visitas/*/observacoes").hasRole("tecnico")
                 .requestMatchers(HttpMethod.POST, "/api/v1/visitas/*/fotos").hasRole("tecnico")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/visitas/*/status").hasAnyRole("admin", "gerente", "tecnico")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/visitas/*/atribuir").hasAnyRole("admin", "gerente")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/visitas/*").hasAnyRole("admin", "gerente")
                 
                 .anyRequest().authenticated()
             )

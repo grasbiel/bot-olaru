@@ -11,7 +11,31 @@ export class UsuarioService {
 
   constructor(private http: HttpClient) {}
 
+  listar(): Observable<any[]> {
+    return this.http.get<any[]>(this.apiUrl);
+  }
+
   listarTecnicos(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/tecnicos`);
+  }
+
+  buscarPorId(id: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}`);
+  }
+
+  criar(dados: any): Observable<any> {
+    return this.http.post<any>(this.apiUrl, dados);
+  }
+
+  atualizar(id: string, dados: any): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/${id}`, dados);
+  }
+
+  redefinirSenha(id: string, novaSenha: string): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/${id}/senha`, { novaSenha }, { responseType: 'text' });
+  }
+
+  desativar(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }
