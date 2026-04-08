@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, BackgroundTasks, HTTPException
-from src.config import WEBHOOK_SECRET, NUMERO_TESTE, logger
+from src.config import WEBHOOK_SECRET, logger
 from src.database import r
 from src.services.ai_service import pensar_e_responder
 from src.services.chatwoot import adicionar_etiqueta_chatwoot
@@ -62,12 +62,6 @@ async def receber_mensagem(request: Request, background_tasks: BackgroundTasks):
                  trigger=is_trigger,
                  robo_ativo=is_robo_ativo,
                  deve_processar=deve_processar)
-
-    # 6. Validação Sandbox (Número de Teste)
-    # Em modo sandbox, apenas o número de teste é processado, sem exceções
-    if NUMERO_TESTE and telefone != NUMERO_TESTE:
-        logger.debug("sandbox_ignore", phone=telefone)
-        return {"status": "sandbox_active"}
 
     # 7. Regras de Pausa e Bloqueio
     # Ignora mensagens de grupos (Chatwoot indica canal "Channel::Api" ou conversa de grupo)

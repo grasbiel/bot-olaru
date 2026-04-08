@@ -34,12 +34,6 @@ EVOLUTION_API_URL = os.getenv("EVOLUTION_API_URL")
 EVOLUTION_API_KEY = os.getenv("EVOLUTION_API_KEY")
 EVOLUTION_INSTANCE = os.getenv("EVOLUTION_INSTANCE")
 
-# --- Filtro de Teste (Sandbox) ---
-NUMERO_TESTE = os.getenv("NUMERO_TESTE") 
-if NUMERO_TESTE:
-    # Normalização robusta do número de teste
-    NUMERO_TESTE = "".join(filter(str.isdigit, NUMERO_TESTE))
-
 # --- URL da API Java (Painel Administrativo) ---
 JAVA_API_URL = os.getenv("JAVA_API_URL", "http://api:8080/api/v1")
 
