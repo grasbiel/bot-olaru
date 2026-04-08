@@ -42,8 +42,7 @@ public class AuthController {
 
             return ResponseEntity.ok(buildTokenDto(usuario));
         } catch (Exception e) {
-            System.err.println("FALHA NA AUTENTICAÇÃO: " + e.getMessage());
-            return ResponseEntity.status(401).body("Credenciais inválidas ou erro interno");
+            return ResponseEntity.status(401).body("Credenciais inválidas");
         }
     }
 

@@ -5,7 +5,7 @@ spring:
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:db_construtora}
     username: ${DB_USER:postgres}
-    password: ${DB_PASS:72d889c22343e475218d}
+    password: ${DB_PASS}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -36,7 +36,7 @@ server:
 api:
   security:
     token:
-      secret: ${JWT_SECRET:olaru-secret-key-para-desenvolvimento-pelo-menos-32-chars}
+      secret: ${JWT_SECRET}
 
 app:
   upload:
