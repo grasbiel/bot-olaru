@@ -16,7 +16,7 @@ from src.services.utils import verificar_limite_mensagens, incrementar_contador_
 from src.tools.api_tools import (
     buscar_dados_cliente, verificar_estoque, 
     consultar_disponibilidade_agenda, registrar_visita_tecnica,
-    acionar_handoff_humano, classificar_lead
+    acionar_handoff_humano, classificar_lead, atualizar_nome_cliente
 )
 
 def obter_modelo():
@@ -51,7 +51,7 @@ def criar_agente() -> Agent:
         
         "MISSÃO PRINCIPAL (SDR):",
         "1. QUALIFICAR: Entender se o cliente quer Obra, Reforma, Manutenção ou Locação.",
-        "2. LOCALIZAR: Confirmar o endereço da intervenção.",
+        "2. LOCALIZAR: Confirmar o endereço da obra e reforma do cliente ou se for máquina, onde ela será utilizada.",
         "3. AGENDAR: Consultar disponibilidade e registrar visita técnica usando as ferramentas.",
         "4. TRANSICIONAR: Informar que um consultor humano assumirá após o agendamento.",
 
@@ -61,6 +61,10 @@ def criar_agente() -> Agent:
         "- Se for o primeiro contato (etiqueta 'lead_novo'), apresente-se com autoridade (18 anos de mercado).",
         "- NUNCA invente preços ou prazos que não venham das ferramentas.",
         "- Se o cliente demonstrar urgência ou irritação, use 'acionar_handoff_humano'.",
+        "- Não passe para o cliente que você está fazendo consultas de funções internas como: classificação dele, salvando o número em base de dados, etc.",
+        "- Atenção: O atendimento é via Whatsapp, você já tem o telefone do cliente. Nunca peça o número dele",
+        "- Olhe os [DADOS DO CLIENTE]. Se o Nome for 'CLIENTE', pergunte educadamente como a pessoa se chama para personalizar o atendimento.",
+        "- ATENÇÃO: O 'Nome' nos dados iniciais vem do perfil do WhatsApp. Seja amigável e sempre confirme o nome com o cliente. Se ele disser um nome diferente (ex: 'me chamo Carlos', 'aqui é a Ana'), chame a ferramenta 'atualizar_nome_cliente' na mesma hora para salvar no banco. Depois disso, chame o cliente APENAS pelo nome que ele escolheu.",
 
         "PROCESSO DE PENSAMENTO (CoT):",
         "Antes de responder, analise as etiquetas e o histórico para saber em qual fase do SDR o cliente está.",
@@ -73,7 +77,7 @@ def criar_agente() -> Agent:
         tools=[
             buscar_dados_cliente, verificar_estoque, 
             consultar_disponibilidade_agenda, registrar_visita_tecnica,
-            acionar_handoff_humano, classificar_lead
+            acionar_handoff_humano, classificar_lead, atualizar_nome_cliente
         ],
         db=storage,
         # Configurações de Memória e Contexto
@@ -86,7 +90,7 @@ def criar_agente() -> Agent:
 # Singleton do Agente
 agente_olara = criar_agente()
 
-async def pensar_e_responder(mensagem_cliente: str, id_conversa: int, telefone: str, etiquetas: List[str] = None):
+async def pensar_e_responder(mensagem_cliente: str, id_conversa: int, telefone: str, nome_contato:str, etiquetas: List[str] = None):
     """Loop principal de processamento da resposta."""
     if not verificar_limite_mensagens():
         logger.warning("rate_limit_reached", phone=telefone)
@@ -98,7 +102,7 @@ async def pensar_e_responder(mensagem_cliente: str, id_conversa: int, telefone: 
 
         # 2. Prepara Contexto Adicional
         contexto_etiquetas = f"\nETIQUETAS: {', '.join(etiquetas) if etiquetas else 'nenhuma'}"
-        prompt_final = f"{mensagem_cliente}\n\n[CONTEXTO OPERACIONAL: ConversaID={id_conversa}, {contexto_etiquetas}]"
+        prompt_final = f"{mensagem_cliente}\n\n[DADOS DO CLIENTE: Nome={nome_contato}, Telefone={telefone}, ETIQUETAS: {', '.join(etiquetas) if etiquetas else 'nenhuma'}]"
 
         # 3. Executa a IA
         # Rodar em thread para não bloquear o loop async (agno sync por padrão)

@@ -2,7 +2,7 @@ import requests
 import json
 import time
 
-URL_WEBHOOK = "http://localhost:8000/webhook"
+URL_WEBHOOK = "http://localhost:8000/api/v1/webhook"
 
 # 1. Simulação de um NOVO CLIENTE vindo de um anúncio
 payload_novo_cliente = {
