@@ -89,8 +89,8 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
-            "https://olaru.grasbiel.cloud", 
-            "http://olaru.grasbiel.cloud",
+            "https://olaru.grasbiel.cloud",
+            "https://app.olaru.com.br",
             "http://localhost:4200"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));

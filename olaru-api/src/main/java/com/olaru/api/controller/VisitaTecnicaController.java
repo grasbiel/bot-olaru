@@ -223,17 +223,27 @@ public class VisitaTecnicaController {
         if (arquivo.isEmpty()) return ResponseEntity.badRequest().body("Arquivo vazio.");
 
         String mimeType = arquivo.getContentType();
-        if (mimeType == null || !mimeType.startsWith("image/")) {
-            return ResponseEntity.badRequest().body("Apenas imagens são permitidas.");
+        if (mimeType == null || (!mimeType.equals("image/jpeg") &&
+                                  !mimeType.equals("image/png") &&
+                                  !mimeType.equals("image/webp"))) {
+            return ResponseEntity.badRequest().body("Apenas imagens JPEG, PNG ou WebP são permitidas.");
         }
 
         VisitaTecnica visita = repository.findById(id).orElse(null);
         if (visita == null) return ResponseEntity.notFound().build();
 
-        // Salva o arquivo no diretório de uploads
-        String extensao = mimeType.contains("png") ? ".png" : ".jpg";
+        String extensao = switch (mimeType) {
+            case "image/png"  -> ".png";
+            case "image/webp" -> ".webp";
+            default           -> ".jpg";
+        };
         String nomeArquivo = UUID.randomUUID() + extensao;
-        Path destino = Paths.get(uploadDir, "visitas", nomeArquivo);
+
+        Path uploadBase = Paths.get(uploadDir, "visitas").toAbsolutePath().normalize();
+        Path destino = uploadBase.resolve(nomeArquivo).normalize();
+        if (!destino.startsWith(uploadBase)) {
+            return ResponseEntity.badRequest().body("Caminho de arquivo inválido.");
+        }
         Files.copy(arquivo.getInputStream(), destino);
 
         String urlPublica = baseUrl + "/uploads/visitas/" + nomeArquivo;

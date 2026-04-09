@@ -31,6 +31,7 @@ server:
   port: 8080
   servlet:
     context-path: /
+  forward-headers-strategy: NATIVE
 
 # JWT Configuration
 api:
@@ -64,6 +65,15 @@ bucket4j:
               time: 1
               unit: minutes
               fixed-delay: 0
+    - cache-name: buckets-senha
+      filter-method: servlet
+      url: /api/v1/usuarios/.*/senha
+      http-response-body: '{"status": 429, "error": "Too Many Requests", "message": "Limite de tentativas de redefinição excedido. Aguarde antes de tentar novamente."}'
+      rate-limits:
+        - bandwidths:
+            - capacity: 5
+              time: 1
+              unit: hours
     - cache-name: buckets-read
       filter-method: servlet
       url: /api/v1/(?!auth/login).*

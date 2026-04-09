@@ -55,8 +55,8 @@ public class UsuarioController {
         if (request.getSenha() == null || request.getSenha().isBlank()) {
             return ResponseEntity.badRequest().body("Senha é obrigatória na criação.");
         }
-        if (request.getSenha().length() < 6) {
-            return ResponseEntity.badRequest().body("A senha deve ter pelo menos 6 caracteres.");
+        if (request.getSenha().length() < 8) {
+            return ResponseEntity.badRequest().body("A senha deve ter pelo menos 8 caracteres.");
         }
         if (repository.findByEmail(request.getEmail().trim().toLowerCase()).isPresent()) {
             return ResponseEntity.badRequest().body("E-mail já está em uso.");
