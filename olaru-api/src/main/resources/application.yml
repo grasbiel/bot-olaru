@@ -37,6 +37,8 @@ api:
   security:
     token:
       secret: ${JWT_SECRET}
+  bot:
+    api-key: ${BOT_API_KEY}
 
 app:
   upload:

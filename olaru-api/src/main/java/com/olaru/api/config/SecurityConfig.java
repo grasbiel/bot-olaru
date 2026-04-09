@@ -1,5 +1,6 @@
 package com.olaru.api.config;
 
+import com.olaru.api.security.BotApiKeyFilter;
 import com.olaru.api.security.SecurityFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     private final SecurityFilter securityFilter;
+    private final BotApiKeyFilter botApiKeyFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -41,13 +43,13 @@ public class SecurityConfig {
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/api-docs/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 
-                // Endpoints usados pelo Bot
-                .requestMatchers(HttpMethod.GET, "/api/v1/clientes/telefone/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/v1/clientes").permitAll()
-                .requestMatchers(HttpMethod.PATCH, "/api/v1/clientes/telefone/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/v1/visitas/disponibilidade").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/v1/visitas").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/v1/maquinas/estoque/**").permitAll()
+                // Endpoints usados pelo Bot — requerem X-Bot-Api-Key (validado pelo BotApiKeyFilter)
+                .requestMatchers(HttpMethod.GET, "/api/v1/clientes/telefone/**").hasRole("bot")
+                .requestMatchers(HttpMethod.POST, "/api/v1/clientes").hasRole("bot")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/clientes/telefone/**").hasRole("bot")
+                .requestMatchers(HttpMethod.GET, "/api/v1/visitas/disponibilidade").hasRole("bot")
+                .requestMatchers(HttpMethod.POST, "/api/v1/visitas").hasRole("bot")
+                .requestMatchers(HttpMethod.GET, "/api/v1/maquinas/estoque/**").hasRole("bot")
 
                 // Endpoints Administrativos
                 .requestMatchers("/api/v1/dashboard/**").hasAnyRole("admin", "gerente")
@@ -70,6 +72,7 @@ public class SecurityConfig {
                 
                 .anyRequest().authenticated()
             )
+            .addFilterBefore(botApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint((request, response, authException) -> {

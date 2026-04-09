@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -80,7 +81,15 @@ public class UsuarioController {
 
     @PatchMapping("/{id}")
     @Operation(summary = "Atualizar dados do usuário")
-    public ResponseEntity<?> atualizar(@PathVariable UUID id, @RequestBody UsuarioRequest request) {
+    public ResponseEntity<?> atualizar(@PathVariable UUID id, @RequestBody UsuarioRequest request, Authentication auth) {
+        // Impede que um admin remova seu próprio perfil (auto-rebaixamento causaria lockout)
+        if (request.getPerfil() != null) {
+            Usuario currentUser = (Usuario) auth.getPrincipal();
+            if (currentUser.getId().equals(id)) {
+                return ResponseEntity.badRequest().body("Não é permitido alterar o próprio perfil.");
+            }
+        }
+
         return repository.findById(id)
                 .map(usuario -> {
                     if (request.getNome() != null) usuario.setNome(request.getNome());

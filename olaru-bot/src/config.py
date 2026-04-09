@@ -41,7 +41,8 @@ JAVA_API_URL = os.getenv("JAVA_API_URL", "http://api:8080/api/v1")
 DB_HOST = os.getenv("DB_HOST", "db")
 DB_NAME = os.getenv("DB_NAME", "db_construtora")
 DB_USER = os.getenv("DB_USER", "postgres")
-DB_PASS = os.getenv("DB_PASS", "72d889c22343e475218d")
+DB_PASS = os.getenv("DB_PASS")
+BOT_API_KEY = os.getenv("BOT_API_KEY")
 DB_PORT = os.getenv("DB_PORT", "5432")
 
 # --- Redis (Dedup, Cache e Rate Limit) ---

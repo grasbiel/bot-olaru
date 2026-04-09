@@ -2,7 +2,9 @@ import requests
 from typing import Optional
 from pydantic import BaseModel, Field, validator
 from datetime import datetime
-from src.config import JAVA_API_URL, logger
+from src.config import JAVA_API_URL, BOT_API_KEY, logger
+
+BOT_HEADERS = {"X-Bot-Api-Key": BOT_API_KEY}
 from src.services.chatwoot import iniciar_handoff_humano, adicionar_etiqueta_chatwoot, substituir_etiqueta_lead_chatwoot
 
 
@@ -30,7 +32,7 @@ def buscar_dados_cliente(telefone: str) -> str:
     """
     try:
         url = f"{JAVA_API_URL}/clientes/telefone/{telefone.replace('+', '')}"
-        response = requests.get(url, timeout=10)
+        response = requests.get(url, headers=BOT_HEADERS, timeout=10)
 
         if response.status_code == 200:
             data = response.json()
@@ -58,7 +60,7 @@ def verificar_estoque(maquina_nome: str) -> str:
     """
     try:
         url = f"{JAVA_API_URL}/maquinas/estoque/{maquina_nome.strip()}"
-        response = requests.get(url, timeout=10)
+        response = requests.get(url, headers=BOT_HEADERS, timeout=10)
 
         if response.status_code == 200:
             data = response.json()
@@ -93,7 +95,7 @@ def consultar_disponibilidade_agenda(data: str, turno: str) -> str:
             return "Turno inválido. Use 'MANHA' ou 'TARDE'."
 
         params = {"data": data, "turno": turno_upper}
-        response = requests.get(f"{JAVA_API_URL}/visitas/disponibilidade", params=params, timeout=10)
+        response = requests.get(f"{JAVA_API_URL}/visitas/disponibilidade", headers=BOT_HEADERS, params=params, timeout=10)
 
         if response.status_code == 200:
             res = response.json()
@@ -134,7 +136,7 @@ def registrar_visita_tecnica(telefone: str, descricao: str, endereco: str, data:
         }
 
         logger.info("tool_call", tool="registrar_visita", telefone=telefone_limpo, data=data, turno=turno_upper)
-        response = requests.post(f"{JAVA_API_URL}/visitas", json=payload, timeout=10)
+        response = requests.post(f"{JAVA_API_URL}/visitas", headers=BOT_HEADERS, json=payload, timeout=10)
 
         if response.status_code in [200, 201]:
             result = response.json()
@@ -171,6 +173,7 @@ def classificar_lead(id_conversa: int, telefone: str, status: str, resumo: Optio
 
         response = requests.patch(
             f"{JAVA_API_URL}/clientes/telefone/{update.telefone}",
+            headers=BOT_HEADERS,
             json=payload,
             timeout=10,
         )
@@ -215,6 +218,7 @@ def atualizar_nome_cliente(telefone: str, novo_nome: str) -> str:
         telefone_limpo = telefone.replace("+", "")
         response = requests.patch(
             f"{JAVA_API_URL}/clientes/telefone/{telefone_limpo}",
+            headers=BOT_HEADERS,
             json={"nome": novo_nome},
             timeout=10,
         )
@@ -237,7 +241,7 @@ def salvar_cliente_no_banco(nome: str, telefone: str) -> Optional[str]:
             "telefone": telefone.replace("+", ""),
             "origem": "whatsapp_robo",
         }
-        response = requests.post(f"{JAVA_API_URL}/clientes", json=payload, timeout=10)
+        response = requests.post(f"{JAVA_API_URL}/clientes", headers=BOT_HEADERS, json=payload, timeout=10)
         if response.status_code in [200, 201]:
             return response.json().get("id")
         return None
