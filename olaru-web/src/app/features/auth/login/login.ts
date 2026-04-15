@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -14,6 +14,7 @@ import { AuthService } from '../../../core/services/auth.service';
 export class LoginComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   email = '';
   senha = '';
@@ -27,15 +28,13 @@ export class LoginComponent {
     this.errorMsg = '';
 
     this.authService.login({ email: this.email.trim(), senha: this.senha }).subscribe({
-      next: (res: any) => {
-        // Guardar usuário para saudação no dashboard
-        localStorage.setItem('user', JSON.stringify(res.usuario || { nome: 'Admin' }));
-        
-        const perfil = res.usuario?.perfil || 'admin';
-        if (perfil === 'tecnico') {
-          this.router.navigate(['/tecnico']);
+      next: () => {
+        // Redireciona para a URL original ou rota padrão do perfil
+        const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+        if (returnUrl) {
+          this.router.navigateByUrl(returnUrl);
         } else {
-          this.router.navigate(['/dashboard']);
+          this.router.navigate([this.authService.getDefaultRoute()]);
         }
       },
       error: () => {

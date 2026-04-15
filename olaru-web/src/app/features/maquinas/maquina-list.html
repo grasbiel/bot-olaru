@@ -1,99 +1,89 @@
-<div class="dashboard-layout">
-  <app-sidebar></app-sidebar>
-  
-  <div class="main-content">
-    <app-header></app-header>
-    
-    <main class="content-body">
-      <header class="content-header">
-        <div class="header-info">
-          <h1>Frota de Máquinas</h1>
-          <p>Controle de inventário e disponibilidade para locação.</p>
-        </div>
-        <button class="btn-primary" (click)="novoCadastro()" *ngIf="!exibirForm">
-          + Cadastrar Equipamento
-        </button>
-      </header>
-
-      <!-- Formulário de Cadastro/Edição -->
-      <div class="card form-card" *ngIf="exibirForm">
-        <h3>{{ maquinaSelecionada.id ? 'Editar Equipamento' : 'Novo Cadastro' }}</h3>
-        <form (submit)="salvar()" class="grid-form">
-          <div class="form-group">
-            <label>Nome do Equipamento</label>
-            <input type="text" [(ngModel)]="maquinaSelecionada.nome" name="nome" required placeholder="Ex: Escavadeira Hidráulica X-200">
-          </div>
-          <div class="form-group">
-            <label>Descrição Técnica</label>
-            <input type="text" [(ngModel)]="maquinaSelecionada.descricao" name="descricao" placeholder="Modelo, ano e especificações principais">
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Quantidade Total</label>
-              <input type="number" [(ngModel)]="maquinaSelecionada.quantidadeTotal" name="total" required>
-            </div>
-            <div class="form-group">
-              <label>Qtd. Disponível</label>
-              <input type="number" [(ngModel)]="maquinaSelecionada.quantidadeDisponivel" name="disponivel" required>
-            </div>
-            <div class="form-group">
-              <label>Valor Diária (R$)</label>
-              <input type="number" [(ngModel)]="maquinaSelecionada.valorDiaria" name="valor" step="0.01" placeholder="0.00">
-            </div>
-          </div>
-          <div class="form-actions">
-            <button type="button" class="btn-outline" (click)="cancelar()">Cancelar</button>
-            <button type="submit" class="btn-primary">Salvar Equipamento</button>
-          </div>
-        </form>
-      </div>
-
-      <!-- Tabela de Listagem -->
-      <div class="card table-card" *ngIf="!exibirForm">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Equipamento / Detalhes</th>
-              <th class="text-center">Estoque Total</th>
-              <th class="text-center">Disponibilidade</th>
-              <th class="text-right">Valor Diária</th>
-              <th>Status</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let m of maquinas">
-              <td>
-                <div class="machine-info">
-                  <strong>{{ m.nome }}</strong>
-                  <span>{{ m.descricao || 'Sem descrição cadastrada' }}</span>
-                </div>
-              </td>
-              <td class="text-center numeric-value">{{ m.quantidadeTotal }}</td>
-              <td class="text-center">
-                <span class="stock-badge" [ngClass]="m.quantidadeDisponivel > 0 ? 'in-stock' : 'out-of-stock'">
-                  {{ m.quantidadeDisponivel }} {{ m.quantidadeDisponivel === 1 ? 'unid.' : 'unid.' }}
-                </span>
-              </td>
-              <td class="text-right price-value">{{ m.valorDiaria | currency:'BRL' }}</td>
-              <td>
-                <span class="status-dot" [ngClass]="m.ativo ? 'active' : 'inactive'"></span>
-                {{ m.ativo ? 'Ativo' : 'Inativo' }}
-              </td>
-              <td class="actions">
-                <button class="btn-icon" (click)="editar(m)" title="Editar">✏️</button>
-                <button class="btn-icon danger" (click)="excluir(m.id)" title="Excluir">🗑️</button>
-              </td>
-            </tr>
-            <tr *ngIf="maquinas.length === 0">
-              <td colspan="6" class="empty-state">
-                <div style="font-size: 40px; margin-bottom: 10px;">🏗️</div>
-                Nenhuma máquina cadastrada no inventário.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </main>
+<header class="content-header">
+  <div class="header-info">
+    <h1>Frota de Máquinas</h1>
+    <p>Controle de inventário e disponibilidade para locação.</p>
   </div>
+  <button class="btn-primary" (click)="novoCadastro()" *ngIf="!exibirForm">
+    + Cadastrar Equipamento
+  </button>
+</header>
+
+<!-- Formulário de Cadastro/Edição -->
+<div class="card form-card" *ngIf="exibirForm">
+  <h3>{{ maquinaSelecionada.id ? 'Editar Equipamento' : 'Novo Cadastro' }}</h3>
+  <form (submit)="salvar()" class="grid-form">
+    <div class="form-group">
+      <label>Nome do Equipamento</label>
+      <input type="text" [(ngModel)]="maquinaSelecionada.nome" name="nome" required placeholder="Ex: Escavadeira Hidráulica X-200">
+    </div>
+    <div class="form-group">
+      <label>Descrição Técnica</label>
+      <input type="text" [(ngModel)]="maquinaSelecionada.descricao" name="descricao" placeholder="Modelo, ano e especificações principais">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Quantidade Total</label>
+        <input type="number" [(ngModel)]="maquinaSelecionada.quantidadeTotal" name="total" required>
+      </div>
+      <div class="form-group">
+        <label>Qtd. Disponível</label>
+        <input type="number" [(ngModel)]="maquinaSelecionada.quantidadeDisponivel" name="disponivel" required>
+      </div>
+      <div class="form-group">
+        <label>Valor Diária (R$)</label>
+        <input type="number" [(ngModel)]="maquinaSelecionada.valorDiaria" name="valor" step="0.01" placeholder="0.00">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="button" class="btn-outline" (click)="cancelar()">Cancelar</button>
+      <button type="submit" class="btn-primary">Salvar Equipamento</button>
+    </div>
+  </form>
+</div>
+
+<!-- Tabela de Listagem -->
+<div class="card table-card" *ngIf="!exibirForm">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Equipamento / Detalhes</th>
+        <th class="text-center">Estoque Total</th>
+        <th class="text-center">Disponibilidade</th>
+        <th class="text-right">Valor Diária</th>
+        <th>Status</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let m of maquinas">
+        <td>
+          <div class="machine-info">
+            <strong>{{ m.nome }}</strong>
+            <span>{{ m.descricao || 'Sem descrição cadastrada' }}</span>
+          </div>
+        </td>
+        <td class="text-center numeric-value">{{ m.quantidadeTotal }}</td>
+        <td class="text-center">
+          <span class="stock-badge" [ngClass]="m.quantidadeDisponivel > 0 ? 'in-stock' : 'out-of-stock'">
+            {{ m.quantidadeDisponivel }} {{ m.quantidadeDisponivel === 1 ? 'unid.' : 'unid.' }}
+          </span>
+        </td>
+        <td class="text-right price-value">{{ m.valorDiaria | currency:'BRL' }}</td>
+        <td>
+          <span class="status-dot" [ngClass]="m.ativo ? 'active' : 'inactive'"></span>
+          {{ m.ativo ? 'Ativo' : 'Inativo' }}
+        </td>
+        <td class="actions">
+          <button class="btn-icon" (click)="editar(m)" title="Editar">✏️</button>
+          <button class="btn-icon danger" (click)="excluir(m.id)" title="Excluir">🗑️</button>
+        </td>
+      </tr>
+      <tr *ngIf="maquinas.length === 0">
+        <td colspan="6" class="empty-state">
+          <div style="font-size: 40px; margin-bottom: 10px;">🏗️</div>
+          Nenhuma máquina cadastrada no inventário.
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </div>

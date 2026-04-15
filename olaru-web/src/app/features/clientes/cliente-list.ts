@@ -1,8 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SidebarComponent } from '../../shared/components/sidebar/sidebar';
-import { HeaderComponent } from '../../shared/components/header/header';
 import { ClienteService } from '../../core/services/cliente.service';
 
 interface Cliente {
@@ -19,7 +17,7 @@ interface Cliente {
 @Component({
   selector: 'app-cliente-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, HeaderComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './cliente-list.html',
   styleUrl: './cliente-list.css'
 })

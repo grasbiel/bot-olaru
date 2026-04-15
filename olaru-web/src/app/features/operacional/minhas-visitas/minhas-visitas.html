@@ -1,60 +1,54 @@
-<div class="main-content">
-  <app-header></app-header>
-  
-  <main class="content-body">
-    <!-- Banner Offline -->
-    @if (!isOnline) {
-      <div class="offline-banner">
-        ⚠️ Você está offline. As ações serão sincronizadas ao reconectar.
+<!-- Banner Offline -->
+@if (!isOnline) {
+  <div class="offline-banner">
+    ⚠️ Você está offline. As ações serão sincronizadas ao reconectar.
+  </div>
+}
+
+<header class="page-header">
+  <h2>Minhas Visitas do Dia</h2>
+</header>
+
+@if (visitas.length === 0) {
+  <div class="empty-state">
+    <p>Você não tem visitas agendadas para hoje.</p>
+  </div>
+} @else {
+  <div class="visitas-list">
+    @for (visita of visitas; track visita.id) {
+      <div class="visita-card" [class.ativa]="visita.status === 'em_andamento'">
+        <div class="visita-info">
+          <span class="cliente-nome">{{ visita.cliente?.nome || 'Cliente sem nome' }}</span>
+          <span class="turno-badge">{{ visita.turno }}</span>
+          <p class="endereco">{{ visita.endereco }}</p>
+          <p class="descricao">{{ visita.descricaoServico }}</p>
+        </div>
+
+        <div class="visita-actions">
+          <button class="btn-outline" (click)="abrirMapa(visita.endereco)">
+            📍 Ver no Mapa
+          </button>
+
+          @if (visita.status === 'confirmada') {
+            <button class="btn-primary" (click)="chegueiNoLocal(visita)" [disabled]="!isOnline">
+              📍 Cheguei no Local
+            </button>
+          }
+
+          @if (visita.status === 'em_andamento') {
+            <button class="btn-success" (click)="abrirFinalizacao(visita)" [disabled]="!isOnline">
+              ✅ Finalizar Visita
+            </button>
+          }
+
+          @if (visita.status === 'concluida') {
+            <span class="status-concluida">✓ Visita Concluída</span>
+          }
+        </div>
       </div>
     }
-
-    <header class="page-header">
-      <h2>Minhas Visitas do Dia</h2>
-    </header>
-
-    @if (visitas.length === 0) {
-      <div class="empty-state">
-        <p>Você não tem visitas agendadas para hoje.</p>
-      </div>
-    } @else {
-      <div class="visitas-list">
-        @for (visita of visitas; track visita.id) {
-          <div class="visita-card" [class.ativa]="visita.status === 'em_andamento'">
-            <div class="visita-info">
-              <span class="cliente-nome">{{ visita.cliente?.nome || 'Cliente sem nome' }}</span>
-              <span class="turno-badge">{{ visita.turno }}</span>
-              <p class="endereco">{{ visita.endereco }}</p>
-              <p class="descricao">{{ visita.descricaoServico }}</p>
-            </div>
-
-            <div class="visita-actions">
-              <button class="btn-outline" (click)="abrirMapa(visita.endereco)">
-                📍 Ver no Mapa
-              </button>
-
-              @if (visita.status === 'confirmada') {
-                <button class="btn-primary" (click)="chegueiNoLocal(visita)" [disabled]="!isOnline">
-                  📍 Cheguei no Local
-                </button>
-              }
-
-              @if (visita.status === 'em_andamento') {
-                <button class="btn-success" (click)="abrirFinalizacao(visita)" [disabled]="!isOnline">
-                  ✅ Finalizar Visita
-                </button>
-              }
-
-              @if (visita.status === 'concluida') {
-                <span class="status-concluida">✓ Visita Concluída</span>
-              }
-            </div>
-          </div>
-        }
-      </div>
-    }
-  </main>
-</div>
+  </div>
+}
 
 <!-- Modal de Finalização -->
 @if (mostrarModal) {

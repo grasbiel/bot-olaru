@@ -1,15 +1,13 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SidebarComponent } from '../../shared/components/sidebar/sidebar';
-import { HeaderComponent } from '../../shared/components/header/header';
 import { AuthService } from '../../core/services/auth.service';
 import { UsuarioService } from '../../core/services/usuario.service';
 
 @Component({
   selector: 'app-configuracoes',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, HeaderComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './configuracoes.html',
   styleUrl: './configuracoes.css'
 })
@@ -34,7 +32,7 @@ export class ConfiguracoesComponent implements OnInit {
 
   carregarPerfil() {
     // Aqui assumimos que o AuthService tem o usuário ou buscamos do backend
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const user = this.authService.usuario();
     this.usuario = { ...user };
   }
 

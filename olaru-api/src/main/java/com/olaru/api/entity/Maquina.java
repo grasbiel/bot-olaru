@@ -36,6 +36,7 @@ public class Maquina {
     @Column(name = "valor_diaria")
     private BigDecimal valorDiaria;
 
+    @Builder.Default
     private Boolean ativo = true;
 
     @CreationTimestamp

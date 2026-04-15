@@ -7,14 +7,13 @@
   <div class="user-profile">
     <div class="notifications">
       <span class="icon">🔔</span>
-      <span class="badge">3</span>
     </div>
     
-    <div class="user-info">
-      <div class="avatar">AD</div>
+    <div class="user-info" *ngIf="usuario()">
+      <div class="avatar">{{ iniciais() }}</div>
       <div class="details">
-        <span class="name">Admin Olaru</span>
-        <span class="role">Administrador</span>
+        <span class="name">{{ usuario()!.nome }}</span>
+        <span class="role">{{ perfilLabel() }}</span>
       </div>
     </div>
   </div>

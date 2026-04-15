@@ -1,8 +1,6 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SidebarComponent } from '../../../shared/components/sidebar/sidebar';
-import { HeaderComponent } from '../../../shared/components/header/header';
 import { VisitaService } from '../../../core/services/visita.service';
 import { UsuarioService } from '../../../core/services/usuario.service';
 import { Subscription } from 'rxjs';
@@ -16,7 +14,7 @@ import {
 @Component({
   selector: 'app-kanban',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, HeaderComponent, DragDropModule],
+  imports: [CommonModule, FormsModule, DragDropModule],
   templateUrl: './kanban.html',
   styleUrl: './kanban.css'
 })

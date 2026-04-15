@@ -1,8 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SidebarComponent } from '../../shared/components/sidebar/sidebar';
-import { HeaderComponent } from '../../shared/components/header/header';
 import { EquipeService } from '../../core/services/equipe.service';
 
 interface Equipe {
@@ -16,7 +14,7 @@ interface Equipe {
 @Component({
   selector: 'app-equipe-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, HeaderComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './equipe-list.html',
   styleUrl: './equipe-list.css'
 })

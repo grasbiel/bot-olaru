@@ -1,8 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SidebarComponent } from '../../shared/components/sidebar/sidebar';
-import { HeaderComponent } from '../../shared/components/header/header';
 import { MaquinaService } from '../../core/services/maquina.service';
 
 interface Maquina {
@@ -18,7 +16,7 @@ interface Maquina {
 @Component({
   selector: 'app-maquina-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, HeaderComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './maquina-list.html',
   styleUrl: './maquina-list.css'
 })

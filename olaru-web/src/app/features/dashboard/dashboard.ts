@@ -1,8 +1,7 @@
 import { Component, OnInit, inject, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SidebarComponent } from '../../shared/components/sidebar/sidebar';
-import { HeaderComponent } from '../../shared/components/header/header';
 import { DashboardService } from '../../core/services/dashboard.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
@@ -10,12 +9,13 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, SidebarComponent, HeaderComponent],
+  imports: [CommonModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
   private dashboardService = inject(DashboardService);
+  private authService = inject(AuthService);
 
   @ViewChild('evolucaoChart') evolucaoChart!: ElementRef;
   private chartInstance: any;
@@ -49,9 +49,9 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       year: 'numeric' 
     }).format(new Date());
 
-    // Tentar pegar nome do usuário do storage
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    if (user.nome) this.usuarioNome = user.nome.split(' ')[0];
+    // Pegar nome do usuário do AuthService
+    const usuario = this.authService.usuario();
+    if (usuario?.nome) this.usuarioNome = usuario.nome.split(' ')[0];
   }
 
   ngAfterViewInit() {

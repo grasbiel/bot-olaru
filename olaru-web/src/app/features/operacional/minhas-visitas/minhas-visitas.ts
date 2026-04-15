@@ -2,12 +2,12 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { VisitaService } from '../../../core/services/visita.service';
-import { HeaderComponent } from '../../../shared/components/header/header';
+
 
 @Component({
   selector: 'app-minhas-visitas',
   standalone: true,
-  imports: [CommonModule, FormsModule, HeaderComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './minhas-visitas.html',
   styleUrl: './minhas-visitas.css'
 })

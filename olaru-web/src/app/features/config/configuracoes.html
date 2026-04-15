@@ -1,68 +1,58 @@
-<div class="dashboard-layout">
-  <app-sidebar></app-sidebar>
-  
-  <div class="main-content">
-    <app-header></app-header>
-    
-    <main class="content-body">
-      <header class="content-header">
-        <h1>Configurações do Sistema</h1>
-        <p>Gerencie seus dados de perfil e preferências da conta.</p>
-      </header>
+<header class="content-header">
+  <h1>Configurações do Sistema</h1>
+  <p>Gerencie seus dados de perfil e preferências da conta.</p>
+</header>
 
-      <div class="config-grid">
-        <!-- Perfil do Usuário -->
-        <div class="card">
-          <div class="card-header">
-            <h3>Meu Perfil</h3>
-            <p>Informações básicas de identificação.</p>
-          </div>
-          <form (submit)="salvarPerfil()" class="grid-form">
-            <div class="form-group">
-              <label>Nome Completo</label>
-              <input type="text" [(ngModel)]="usuario.nome" name="nome">
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>E-mail</label>
-                <input type="email" [(ngModel)]="usuario.email" name="email" disabled>
-              </div>
-              <div class="form-group">
-                <label>Login de Acesso</label>
-                <input type="text" [(ngModel)]="usuario.login" name="login" disabled>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Perfil de Acesso</label>
-              <input type="text" [value]="usuario.perfil" disabled>
-            </div>
-            <button type="submit" class="btn-primary">Atualizar Dados</button>
-          </form>
+<div class="config-grid">
+  <!-- Perfil do Usuário -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Meu Perfil</h3>
+      <p>Informações básicas de identificação.</p>
+    </div>
+    <form (submit)="salvarPerfil()" class="grid-form">
+      <div class="form-group">
+        <label>Nome Completo</label>
+        <input type="text" [(ngModel)]="usuario.nome" name="nome">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>E-mail</label>
+          <input type="email" [(ngModel)]="usuario.email" name="email" disabled>
         </div>
-
-        <!-- Segurança -->
-        <div class="card">
-          <div class="card-header">
-            <h3>Segurança</h3>
-            <p>Altere sua senha de acesso ao portal.</p>
-          </div>
-          <form (submit)="alterarSenha()" class="grid-form">
-            <div class="form-group">
-              <label>Senha Atual</label>
-              <input type="password" [(ngModel)]="senhaAtual" name="senhaAtual">
-            </div>
-            <div class="form-group">
-              <label>Nova Senha</label>
-              <input type="password" [(ngModel)]="novaSenha" name="novaSenha">
-            </div>
-            <div class="form-group">
-              <label>Confirmar Nova Senha</label>
-              <input type="password" [(ngModel)]="confirmarSenha" name="confirmarSenha">
-            </div>
-            <button type="submit" class="btn-primary">Alterar Senha</button>
-          </form>
+        <div class="form-group">
+          <label>Login de Acesso</label>
+          <input type="text" [(ngModel)]="usuario.login" name="login" disabled>
         </div>
       </div>
-    </main>
+      <div class="form-group">
+        <label>Perfil de Acesso</label>
+        <input type="text" [value]="usuario.perfil" disabled>
+      </div>
+      <button type="submit" class="btn-primary">Atualizar Dados</button>
+    </form>
+  </div>
+
+  <!-- Segurança -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Segurança</h3>
+      <p>Altere sua senha de acesso ao portal.</p>
+    </div>
+    <form (submit)="alterarSenha()" class="grid-form">
+      <div class="form-group">
+        <label>Senha Atual</label>
+        <input type="password" [(ngModel)]="senhaAtual" name="senhaAtual">
+      </div>
+      <div class="form-group">
+        <label>Nova Senha</label>
+        <input type="password" [(ngModel)]="novaSenha" name="novaSenha">
+      </div>
+      <div class="form-group">
+        <label>Confirmar Nova Senha</label>
+        <input type="password" [(ngModel)]="confirmarSenha" name="confirmarSenha">
+      </div>
+      <button type="submit" class="btn-primary">Alterar Senha</button>
+    </form>
   </div>
 </div>
