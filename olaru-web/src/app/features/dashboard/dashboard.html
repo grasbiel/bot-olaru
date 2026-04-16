@@ -1,40 +1,95 @@
 <header class="dashboard-header">
   <div class="greeting">
-    <h1>{{ saudacao }}, {{ usuarioNome }}</h1>
-    <p>{{ dataHoje }}</p>
+    <h1>Dashboard</h1>
   </div>
 </header>
 
 <div class="stats-grid">
+  <!-- Card 1 -->
   <div class="stat-card">
-    <span class="label">Novos Leads Hoje</span>
-    <div class="value">{{ indicadores.novosLeadsHoje }}</div>
-    <span class="trend positive">↑ IA Qualificando</span>
+    <div class="stat-content">
+      <span class="label">New Leads Today</span>
+      <div class="value">{{ indicadores.novosLeadsHoje }}</div>
+    </div>
+    <div class="stat-icon">📈</div>
   </div>
+
+  <!-- Card 2 -->
   <div class="stat-card">
-    <span class="label">Visitas do Dia</span>
-    <div class="value">{{ indicadores.visitasDoDia }}</div>
-    <span class="trend">Agendamentos confirmados</span>
+    <div class="stat-content">
+      <span class="label">Open Opportunities</span>
+      <div class="value">{{ indicadores.oportunidadesAbertas }}</div>
+    </div>
   </div>
+
+  <!-- Card 3 -->
   <div class="stat-card">
-    <span class="label">Máquinas Disponíveis</span>
-    <div class="value">{{ indicadores.maquinasDisponiveis }}</div>
-    <span class="trend">Estoque pronto para locação</span>
+    <div class="stat-content">
+      <span class="label">Conversion Rate</span>
+      <div class="value">{{ indicadores.taxaConversao }}</div>
+    </div>
+    <div class="stat-icon chart-pie">
+      <div class="pie"></div>
+    </div>
   </div>
+
+  <!-- Card 4 -->
   <div class="stat-card">
-    <span class="label">Handoffs Pendentes</span>
-    <div class="value">{{ indicadores.handoffsPendentes }}</div>
-    <span class="trend" [class.positive]="indicadores.handoffsPendentes === 0">
-      Aguardando humano
-    </span>
+    <div class="stat-content">
+      <span class="label">Active Machinery</span>
+      <div class="value">{{ indicadores.maquinasAtivas }} <span class="unit">machines</span></div>
+    </div>
   </div>
 </div>
 
-<div class="charts-row">
-  <div class="chart-container">
-    <h3>Evolução de Conversão</h3>
-    <div class="canvas-wrapper">
-      <canvas #evolucaoChart></canvas>
+<div class="dashboard-bottom-grid">
+  
+  <!-- Left: Funnel Chart -->
+  <div class="widget-card funnel-widget">
+    <h3>Lead Pipeline Funnel</h3>
+    <div class="funnel-container">
+      <div *ngFor="let stage of funil" 
+           class="funnel-stage {{ stage.bgClass }}"
+           [style.width.%]="stage.width">
+        <div class="funnel-content">
+          <span class="stage-label">{{ stage.label }}</span>
+          <span class="stage-value">{{ stage.value }}</span>
+        </div>
+      </div>
     </div>
   </div>
+
+  <!-- Middle: Map -->
+  <div class="widget-card map-widget">
+    <h3>Active Construction Sites</h3>
+    <div class="map-container">
+      <div class="map-bg"></div>
+      <!-- Pins -->
+      <div *ngFor="let loc of locaisMap" 
+           class="map-pin" 
+           [style.top]="loc.top" [style.left]="loc.left">
+        <div class="pin-icon">🚜</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Activities Timeline -->
+  <div class="widget-card timeline-widget">
+    <h3>Recent Activities</h3>
+    <div class="timeline">
+      <div class="timeline-item" *ngFor="let ativ of atividades; let last = last">
+        <!-- linha vertical (exceto no ultimo) -->
+        <div class="timeline-line" *ngIf="!last"></div>
+        
+        <div class="timeline-dot" [style.backgroundColor]="ativ.cor"></div>
+        <div class="timeline-content">
+          <p class="activity-title">
+            <strong>{{ ativ.titulo }}</strong> {{ ativ.descricao }}
+          </p>
+          <span class="activity-time">{{ ativ.tempo }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
