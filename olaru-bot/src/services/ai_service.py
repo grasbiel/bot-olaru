@@ -144,7 +144,6 @@ def criar_agente() -> Agent:
         num_history_messages=12,
         update_memory_on_run=True,
         markdown=False,
-        show_tool_calls=False,
     )
 
 
