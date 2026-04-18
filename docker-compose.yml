@@ -47,6 +47,8 @@ services:
     build:
       context: ./olaru-bot
     restart: always
+    ports:
+      - "8000:8000"
     environment:
       - DB_HOST=db
       - DB_PORT=5432  
